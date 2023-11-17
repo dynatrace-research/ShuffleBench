@@ -1,0 +1,98 @@
+// Note: Most of this is copied from the "Gradle" tab in:
+// https://nightlies.apache.org/flink/flink-docs-master/docs/dev/configuration/overview/#getting-started
+
+plugins {
+    id 'java'
+    id "application"
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'com.google.cloud.tools.jib' version '3.3.1'
+}
+
+application {
+    mainClassName = "com.dynatrace.research.shufflebench.FlinkShuffle"
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
+    withJavadocJar()
+    withSourcesJar()
+}
+
+group 'com.dynatrace'
+version '1.0-SNAPSHOT'
+
+ext {
+    flinkVersion = '1.17.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+// NOTE: We cannot use "compileOnly" or "shadow" configurations since then we could not run code
+// in the IDE or with "gradle run". We also cannot exclude transitive dependencies from the
+// shadowJar yet (see https://github.com/johnrengelman/shadow/issues/159).
+// -> Explicitly define the // libraries we want to be included in the "flinkShadowJar" configuration!
+configurations {
+    flinkShadowJar // dependencies which go into the shadowJar
+    // always exclude these (also from transitive dependencies) since they are provided by Flink
+    flinkShadowJar.exclude group: 'org.apache.flink', module: 'force-shading'
+    flinkShadowJar.exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    flinkShadowJar.exclude group: 'org.slf4j'
+    flinkShadowJar.exclude group: 'org.apache.logging.log4j'
+}
+dependencies {
+    // Compile-time dependencies that should NOT be part of the
+    // shadow (uber) jar and are provided in the lib folder of Flink
+    implementation "org.apache.flink:flink-streaming-java:${flinkVersion}"
+    implementation "org.apache.flink:flink-clients:${flinkVersion}"
+    // Dependencies that should be part of the shadow jar, e.g.
+    // connectors. These must be in the flinkShadowJar configuration!
+    flinkShadowJar "org.apache.flink:flink-connector-kafka:${flinkVersion}"
+    // flinkShadowJar "org.apache.flink:flink-statebackend-rocksdb:${flinkVersion}"
+    // flinkShadowJar "org.apache.flink:flink-metrics-prometheus:${flinkVersion}"
+    // flinkShadowJar "org.apache.flink:flink-runtime-web:${flinkVersion}" // For debugging
+    runtimeOnly 'org.apache.logging.log4j:log4j-api:2.19.0'
+    runtimeOnly 'org.apache.logging.log4j:log4j-core:2.19.0'
+    runtimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.19.0'
+    flinkShadowJar project(':commons')
+    flinkShadowJar 'io.smallrye.config:smallrye-config:3.2.1'
+    flinkShadowJar 'com.dynatrace.hash4j:hash4j:0.9.0'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.9.1'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.9.1'
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.23.1'
+}
+// make compileOnly dependencies available for tests:
+sourceSets {
+    main.compileClasspath += configurations.flinkShadowJar
+    main.runtimeClasspath += configurations.flinkShadowJar
+    test.compileClasspath += configurations.flinkShadowJar
+    test.runtimeClasspath += configurations.flinkShadowJar
+    javadoc.classpath += configurations.flinkShadowJar
+}
+run.classpath = sourceSets.main.runtimeClasspath
+
+test {
+    useJUnitPlatform()
+}
+
+shadowJar {
+    configurations = [project.configurations.flinkShadowJar]
+}
+
+jib {
+    from.image =  "flink:${flinkVersion}"
+    to {
+        // image = ${imageRepository}/${project.name}:${imageTag}
+        image = [[imageRepository, project.name].join('/'), imageTag].join(':')
+        credHelper = 'ecr-login'
+    }
+    containerizingMode = 'packaged'
+    configurationName = 'flinkShadowJar'
+    container {
+        appRoot = '/opt/flink/usrlib/artifacts/'
+        entrypoint = 'INHERIT'
+    }
+}

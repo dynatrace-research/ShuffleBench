@@ -1,0 +1,578 @@
+apiVersion: theodolite.rocks/v1beta1
+kind: benchmark
+metadata:
+  name: shuffle-flink
+  labels:
+    sut: flink
+spec:
+  sut:
+    resources:
+      - configMap:
+          name: shufflebench-resources-flink
+          files:
+          - "input-topic.yaml"
+          - "output-topic.yaml"
+          - "flink-configuration-configmap.yaml"
+          - "jobmanager-deployment.yaml"
+          - "jobmanager-service.yaml"
+          - "service-monitor.yaml"
+          - "taskmanager-deployment.yaml"
+          - "taskmanager-service.yaml"
+      - configMap:
+          name: shufflebench-resources-latency-exporter
+          files:
+          - "shuffle-latency-exporter-deployment.yaml"
+          - "shuffle-latency-exporter-service-monitor.yaml"
+          - "shuffle-latency-exporter-service.yaml"
+  loadGenerator:
+    resources:
+      - configMap:
+          name: shufflebench-resources-load-generator  
+          files:
+          - "shuffle-load-generator-service.yaml"
+          - "shuffle-load-generator-deployment.yaml"
+  resourceTypes:
+    - typeName: "Instances"
+      patchers:
+        - type: "ReplicaPatcher"
+          resource: "taskmanager-deployment.yaml"
+        - type: "EnvVarPatcher"
+          resource: "jobmanager-deployment.yaml"
+          properties:
+            container: "jobmanager"
+            variableName: "FLINK_PARALLELISM"
+  loadTypes:
+    - typeName: "MessagesPerSecond"
+      patchers:
+        - type: "EnvVarPatcher"
+          resource: "shuffle-load-generator-deployment.yaml"
+          properties:
+            container: "shuffle-load-generator"
+            variableName: "NUM_RECORDS_PER_SOURCE_SECOND"
+  slos:
+    - name: "lag trend"
+      sloType: "lag trend"
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        consumerGroup: shufflebench-flink
+        thresholdRelToLoad: 0.01
+        externalSloUrl: "http://localhost:80/evaluate-slope"
+        warmup: 120 # in seconds
+    # Normal, "read-only" metrics:
+    - name: "throughput"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "sum by(consumergroup,topic) (rate(kafka_consumergroup_current_offset{topic='input'}[10s]) >= 0)"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p05"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.05, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p10"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.10, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p15"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.15, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p20"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.20, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p25"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.25, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p30"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.30, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p35"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.35, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p40"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.40, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p45"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.45, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p50"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.50, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p55"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.55, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p60"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.60, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p65"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.65, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p70"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.70, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p75"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.75, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p80"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.80, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p85"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.85, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p90"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.90, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p95"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.95, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p99"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.99, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p100"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(1.00, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 120 # in seconds
+    - name: "latency_p05_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.05, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p10_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.10, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p15_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.15, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p20_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.20, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p25_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.25, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p30_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.30, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p35_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.35, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p40_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.40, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p45_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.45, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p50_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.50, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p55_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.55, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p60_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.60, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p65_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.65, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p70_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.70, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p75_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.75, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p80_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.80, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p85_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.85, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p90_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.90, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p95_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.95, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p99_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(0.99, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds
+    - name: "latency_p100_total"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "histogram_quantile(1.00, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: "true"
+        threshold: 0
+        warmup: 180 # in seconds

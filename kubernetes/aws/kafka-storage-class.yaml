@@ -1,0 +1,18 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: kafka
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "false"
+provisioner: kubernetes.io/aws-ebs
+#provisioner: ebs.csi.aws.com
+parameters:
+  type: gp3
+  fsType: xfs
+  #csi.storage.k8s.io/fstype: xfs
+  iops: "16000"
+  throughput: "1000" #MiB/s
+  #encrypted: "true"
+#reclaimPolicy: Retain #Delete
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer

@@ -1,0 +1,82 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: spark-master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: spark-master
+  template:
+    metadata:
+      labels:
+        component: spark-master
+    spec:
+      containers:
+        - name: spark-master
+          image: shufflebench/shuffle-spark:latest # Adjust image to yours
+          command: ["/spark-master"]
+          ports:
+            - containerPort: 7077
+            - containerPort: 8080
+          resources:
+            limits:
+              memory: 1Gi
+              cpu: 300m
+        - name: spark-submit
+          image: shufflebench/shuffle-spark:latest # Adjust image to yours
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "theodolite-kafka-kafka-bootstrap:9092"
+            - name: MATCHER_ZIPF_NUM_RULES
+              value: "10000"
+            - name: MATCHER_ZIPF_TOTAL_SELECTIVITY
+              value: "0.2"
+            - name: MATCHER_ZIPF_S
+              value: "0.0"
+            # - name: SPARK_MAX_OFFSETS_PER_TRIGGER
+            #   value: "10000000"
+            - name: SPARK_EXECUTOR_MEMORY
+              value: "3G"
+            - name: SPARK_SQL_SHUFFLE_PARTITIONS
+              value: "100"
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          command:
+            - bash
+            - -c
+            - >
+              /opt/spark/bin/spark-submit \
+                --master spark://spark-master:7077 \
+                --deploy-mode client \
+                --class com.dynatrace.research.shufflebench.SparkStructuredStreamingShuffle \
+                --conf spark.driver.host=$POD_IP \
+                --conf spark.driver.bindAddress=$POD_IP \
+                --conf spark.executor.memory=$SPARK_EXECUTOR_MEMORY \
+                --conf spark.sql.shuffle.partitions=$SPARK_SQL_SHUFFLE_PARTITIONS \
+                /shuffle-spark-1.0-SNAPSHOT.jar
+          ports:
+            - containerPort: 4040
+          resources:
+            limits:
+              memory: 1Gi
+              cpu: 300m
+          volumeMounts:
+            - name: shared-data
+              mountPath: /tmp/spark/ # to store the checkpoints
+        - name: sparkfilemonitor
+          image: shufflebench/shuffle-spark:spark-file-monitor # Adjust image to yours
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "100m"
+          volumeMounts:
+            - name: shared-data
+              mountPath: /tmp/spark # to access the offsets
+      volumes:
+        - name: shared-data
+          emptyDir: {}
+      nodeSelector:
+        type: sut

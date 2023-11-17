@@ -1,0 +1,62 @@
+plugins {
+    id 'java'
+    // id 'com.diffplug.spotless' version '6.12.0'
+    id "application"
+    id 'com.google.cloud.tools.jib' version '3.3.1'
+}
+
+application {
+    mainClassName = "com.dynatrace.research.shufflebench.HazelcastShuffle"
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
+    withJavadocJar()
+    withSourcesJar()
+}
+
+group 'com.dynatrace'
+version '1.0-SNAPSHOT'
+
+//spotless {
+//    ratchetFrom 'origin/main'
+//    java {
+//        importOrder()
+//        removeUnusedImports()
+//        googleJavaFormat('1.15.0')
+//    }
+//}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':commons')
+    implementation 'com.hazelcast:hazelcast:5.3.1'
+    implementation 'com.hazelcast.jet:hazelcast-jet-kafka:5.3.1'
+    implementation 'com.hazelcast:hazelcast-kubernetes:2.2.3'
+    implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
+    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.19.0'
+    implementation 'io.smallrye.config:smallrye-config:3.2.1'
+    implementation 'com.dynatrace.hash4j:hash4j:0.9.0'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.9.1'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.9.1'
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.23.1'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jib {
+    to {
+        // image = ${imageRepository}/${project.name}:${imageTag}
+        image = [[imageRepository, project.name].join('/'), imageTag].join(':')
+        credHelper = 'ecr-login'
+    }
+    container.mainClass = application.getMainClass().get()
+}

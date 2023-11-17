@@ -1,0 +1,33 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: spark-worker
+spec:
+  replicas: 9
+  selector:
+    matchLabels:
+      component: spark-worker
+  template:
+    metadata:
+      labels:
+        component: spark-worker
+    spec:
+      containers:
+        - name: spark-worker
+          image: shuffle-spark:latest # Adjust image to yours
+          imagePullPolicy: Always
+          command: ["/spark-worker"]
+          volumeMounts:
+            - name: shared-data
+              mountPath: /tmp/spark/ # to store the checkpoints
+          ports:
+            - containerPort: 8081
+          resources:
+            limits:
+              memory: 4Gi
+              cpu: 1000m
+      volumes:
+        - name: shared-data
+          emptyDir: {}
+      nodeSelector:
+        type: sut

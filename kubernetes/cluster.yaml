@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/weaveworks/eksctl/main/pkg/apis/eksctl.io/v1alpha5/assets/schema.json
+
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: shufflebench
+  region: us-east-1
+
+nodeGroups:
+  - name: infra
+    labels:
+      type: infra
+    instanceType: m6i.xlarge
+    desiredCapacity: 4
+    iam:
+      withAddonPolicies:
+        ebs: true
+  - name: sut
+    labels:
+      type: sut
+    instanceType: m6i.xlarge
+    desiredCapacity: 3
+    iam:
+      withAddonPolicies:
+        ebs: true
+  - name: kafka
+    labels:
+      type: kafka
+    #instanceType: m6i.large
+    instanceType: m6i.2xlarge
+    desiredCapacity: 3
+    volumeSize: 80
+    iam:
+      withAddonPolicies:
+        ebs: true
+
+addons:
+  - name: aws-ebs-csi-driver

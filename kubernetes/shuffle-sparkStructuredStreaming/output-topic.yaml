@@ -1,0 +1,11 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: output
+  labels:
+    strimzi.io/cluster: theodolite-kafka
+spec:
+  partitions: 100
+  replicas: 1
+  config:
+    message.timestamp.type: LogAppendTime

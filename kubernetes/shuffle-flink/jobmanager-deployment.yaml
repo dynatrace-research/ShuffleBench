@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flink-jobmanager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flink
+      component: jobmanager
+  template:
+    metadata:
+      labels:
+        app: flink
+        component: jobmanager
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - name: jobmanager
+          image: shufflebench/shuffle-flink:latest # Adjust image to yours
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "theodolite-kafka-kafka-bootstrap:9092"
+            - name: FLINK_PARALLELISM
+              value: "9"
+            - name: MATCHER_ZIPF_NUM_RULES
+              value: "1000000"
+            - name: MATCHER_ZIPF_TOTAL_SELECTIVITY
+              value: "0.2"
+            - name: MATCHER_ZIPF_S
+              value: "0.0"
+          resources:
+            limits:
+              memory: 2Gi
+              cpu: 500m
+          args: ["standalone-job", "--job-classname", "com.dynatrace.research.shufflebench.FlinkShuffle"]
+          ports:
+            - containerPort: 6123
+              name: rpc
+            - containerPort: 6124
+              name: blob-server
+            - containerPort: 8081
+              name: webui
+            - containerPort: 9249
+              name: metrics
+          livenessProbe:
+            tcpSocket:
+              port: 6123
+            initialDelaySeconds: 30
+            periodSeconds: 60
+          volumeMounts:
+            - name: flink-config-volume
+              mountPath: /opt/flink/conf
+          securityContext:
+            runAsUser: 9999  # refers to user _flink_ from official flink image, change if necessary
+      volumes:
+        - name: flink-config-volume
+          configMap:
+            name: flink-config
+            items:
+              - key: flink-conf.yaml
+                path: flink-conf.yaml
+              - key: log4j-console.properties
+                path: log4j-console.properties
+      nodeSelector:
+        type: sut

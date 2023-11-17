@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: shuffle-load-generator
+spec:
+  serviceName: "shuffle-load-generator"
+  selector:
+    matchLabels:
+      app: shuffle-load-generator
+  replicas: 4
+  template:
+    metadata:
+      labels:
+        app: shuffle-load-generator
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - name: shuffle-load-generator
+          image: shufflebench/load-generator:latest # Adjust image to yours
+          env:
+            - name: SEED_STRING
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "theodolite-kafka-kafka-bootstrap:9092"
+            - name: THREAD_POOL_SIZE
+              value: "4"
+            - name: "NUM_RECORDS_PER_SOURCE_SECOND"
+              value: "250000"
+            - name: "RECORD_SIZE_BYTES"
+              value: "1024"
+      nodeSelector:
+        type: infra
