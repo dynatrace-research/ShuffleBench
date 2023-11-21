@@ -2,12 +2,13 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "test-ci" ]
   pull_request:
     branches: [ "main" ]
 
 permissions:
   contents: read
+  packages: write
 
 jobs:
   build:
