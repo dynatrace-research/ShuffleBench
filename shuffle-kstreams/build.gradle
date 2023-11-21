@@ -44,7 +44,15 @@ jib {
     to {
         // image = ${imageRepository}/${project.name}:${imageTag}
         image = [[imageRepository, project.name].join('/'), imageTag].join(':')
-        credHelper = 'ecr-login'
+        if (project.hasProperty('imageCredHelper')) {
+            credHelper = imageCredHelper
+        }
+        if (project.hasProperty('imageUsername') && project.hasProperty('imagePassword')) {
+            auth {
+                username = imageUsername
+                password = imagePassword
+            }
+        }
     }
     container.mainClass = application.getMainClass().get()
 }

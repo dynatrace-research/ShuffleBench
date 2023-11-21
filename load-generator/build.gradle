@@ -1,6 +1,5 @@
 plugins {
     id 'java'
-    // id 'com.diffplug.spotless' version '6.12.0'
     id "application"
     id 'com.google.cloud.tools.jib' version '3.3.1'
 }
@@ -19,15 +18,6 @@ java {
 
 group 'com.dynatrace'
 version '1.0-SNAPSHOT'
-
-//spotless {
-//    ratchetFrom 'origin/main'
-//    java {
-//        importOrder()
-//        removeUnusedImports()
-//        googleJavaFormat('1.15.0')
-//    }
-//}
 
 repositories {
     mavenCentral()
@@ -55,7 +45,15 @@ jib {
     to {
         // image = ${imageRepository}/${project.name}:${imageTag}
         image = [[imageRepository, project.name].join('/'), imageTag].join(':')
-        credHelper = 'ecr-login'
+        if (project.hasProperty('imageCredHelper')) {
+            credHelper = imageCredHelper
+        }
+        if (project.hasProperty('imageUsername') && project.hasProperty('imagePassword')) {
+            auth {
+                username = imageUsername
+                password = imagePassword
+            }
+        }
     }
     container.mainClass = application.getMainClass().get()
 }

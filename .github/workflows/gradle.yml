@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  packages: write
 
 jobs:
   build:
@@ -25,3 +26,8 @@ jobs:
       uses: gradle/gradle-build-action@v2
     - name: Execute Gradle build
       run: ./gradlew build
+    - name: Execute Gradle jib
+      env:
+        ORG_GRADLE_PROJECT_imageUsername: ${{ github.actor }}
+        ORG_GRADLE_PROJECT_imagePassword: ${{ secrets.GITHUB_TOKEN }}
+      run: ./gradlew jib
