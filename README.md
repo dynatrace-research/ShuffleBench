@@ -43,7 +43,3 @@ For Spark, we have to build and push the image manually (e.g., using the Docker 
 docker build -t <your.registry.com>/shufflebench/shufflebench-spark shuffle-spark/
 docker push shufflebench-spark
 ```
-
-## License
-
-We are currently in the approval process for an open license.
