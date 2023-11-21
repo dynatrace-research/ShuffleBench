@@ -25,4 +25,4 @@ jobs:
     - name: Setup Gradle
       uses: gradle/gradle-build-action@v2
     - name: Execute Gradle build
-      run: ./gradlew build
+      run: ORG_GRADLE_PROJECT_imageRepository=ghcr.io/dynatrace-research/shufflebench ORG_GRADLE_PROJECT_imageUsername=${{ github.actor }} ORG_GRADLE_PROJECT_imagePassword=${{ secrets.GITHUB_TOKEN }} ./gradlew :shuffle-load-generator:jib
