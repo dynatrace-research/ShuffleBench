@@ -73,20 +73,6 @@ tasks.register("allJar", com.github.jengelman.gradle.plugins.shadow.tasks.Shadow
 test {
     useJUnitPlatform()
 }
-jib {
-    from.image =  "apache/spark:${sparkVersion}"
-    to {
-        // image = [[imageRepository, project.name].join('/'), imageTag].join(':')
-        image = "spark-test"
-        credHelper = 'ecr-login'
-    }
-    containerizingMode = 'packaged'
-    // configurationName = 'shadow'
-    container {
-        // appRoot = '/opt/spark/work-dir'
-        entrypoint = 'INHERIT'
-    }
-}
 shadowJar {
     classifier = null
     version = version
