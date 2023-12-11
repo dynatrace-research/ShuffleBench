@@ -83,7 +83,7 @@ Theodolite automates benchmarking in Kubernetes by providing [Kubernetes CRDs](h
 
 ```sh
 # Delete configmaps if already created before
-kubectl delete configmaps --ignore-not-found=true shufflebench-resources-load-generator shufflebench-resources-latency-exporter shufflebench-resources-kstreams shufflebench-resources-hzcast shufflebench-resources-flink  shufflebench-resources-spark 
+kubectl delete configmaps --ignore-not-found=true shufflebench-resources-load-generator shufflebench-resources-latency-exporter shufflebench-resources-kstreams shufflebench-resources-hzcast shufflebench-resources-flink shufflebench-resources-spark 
 kubectl create configmap shufflebench-resources-load-generator --from-file ./shuffle-load-generator/
 kubectl create configmap shufflebench-resources-latency-exporter --from-file ./shuffle-latency-exporter/
 kubectl create configmap shufflebench-resources-kstreams --from-file ./shuffle-kstreams/

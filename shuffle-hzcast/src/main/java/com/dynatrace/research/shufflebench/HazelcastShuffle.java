@@ -90,6 +90,9 @@ public class HazelcastShuffle {
     final int numRules = config.getValue("matcher.zipf.num.rules", Integer.class);
     final double s = config.getValue("matcher.zipf.s", Double.class);
     final int outputRate = config.getValue("consumer.output.rate", Integer.class);
+    final int stateSizeBytes = config.getValue("consumer.state.size.bytes", Integer.class);
+    final boolean initCountRandom = config.getValue("consumer.init.count.random", Boolean.class);
+    final long initCountSeed = config.getValue("consumer.init.count.seed", Long.class);
 
     ServiceFactory<?, MatcherService<TimestampedRecord>> matcherServiceFactory = nonSharedService(
         pctx -> {
@@ -104,7 +107,7 @@ public class HazelcastShuffle {
           }
         });
 
-    final StatefulConsumer consumer = new AdvancedStateConsumer("counter", outputRate);
+    final StatefulConsumer consumer = new AdvancedStateConsumer("counter", outputRate, stateSizeBytes, initCountRandom, initCountSeed);
 
     this.pipeline = Pipeline.create();
     pipeline.readFrom(KafkaSources.<Void, Record, TimestampedRecord>kafka(
