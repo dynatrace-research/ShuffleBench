@@ -1,18 +1,14 @@
 package com.dynatrace.research.shufflebench;
 
 import com.sun.net.httpserver.HttpServer;
-import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.eclipse.microprofile.config.Config;
@@ -26,9 +22,8 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class LatencyExporter {
@@ -38,6 +33,8 @@ public class LatencyExporter {
     private final String kafkaBootstrapServers;
 
     private final String kafkaTopic;
+
+    private final String kafkaIsolationLevel;
 
     private final String prometheusExporterPath;
 
@@ -51,6 +48,7 @@ public class LatencyExporter {
         prometheusExporterPort = config.getValue("prometheus.exporter.port", Integer.class);
         kafkaBootstrapServers = config.getValue("kafka.bootstrap.servers", String.class);
         kafkaTopic = config.getValue("kafka.topic", String.class);
+        kafkaIsolationLevel = config.getOptionalValue("kafka.isolation.level", String.class).orElse(null);
     }
 
     public void startBlocking() {
@@ -77,6 +75,9 @@ public class LatencyExporter {
         final Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, this.kafkaBootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "shufflebench-latency-exporter");
+        if (this.kafkaIsolationLevel != null) {
+            props.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG, this.kafkaIsolationLevel);
+        }
         try (KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(props, new StringDeserializer(), new ByteArrayDeserializer())) {
             consumer.subscribe(List.of(this.kafkaTopic));
             while (keepRunning) {
