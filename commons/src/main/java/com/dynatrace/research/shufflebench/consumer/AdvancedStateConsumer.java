@@ -63,7 +63,7 @@ public class AdvancedStateConsumer implements StatefulConsumer {
       state.setData(data);
 
       if (initCountRandom) {
-        // Take first 32 bytes of record or less if record is smaller as seed for random
+        // Take first 32 bytes of record (or less if record is smaller) as seed for random
         final long seedForRandom = hasher.hashBytesToLong(record.getData(), 0, Math.min(record.getData().length, 32));
         final SplittableRandom random = new SplittableRandom(seedForRandom);
         countInit = random.nextInt(outputRate);
@@ -84,7 +84,8 @@ public class AdvancedStateConsumer implements StatefulConsumer {
       stateBuffer.position(stateBuffer.position() + Long.BYTES); // start timestamp
     }
     stateBuffer.putLong(record.getTimestamp()); // end timestamp
-    stateBuffer.put(record.getData(), 0, stateBuffer.remaining()); // fill with data from record
+    final int bytesToCopy = Math.min(stateBuffer.remaining(), record.getData().length);
+    stateBuffer.put(record.getData(), 0, bytesToCopy); // fill with data from record
 
     LOGGER.debug("{}: count = {}", name, count);
 
