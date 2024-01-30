@@ -1,0 +1,57 @@
+plugins {
+    id 'java'
+    id "application"
+    id 'com.google.cloud.tools.jib' version '3.3.1'
+}
+
+application {
+    mainClassName = "com.dynatrace.research.shufflebench.OffsetCommitter"
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
+    withJavadocJar()
+    withSourcesJar()
+}
+
+group 'com.dynatrace'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.apache.kafka:kafka-clients:3.5.0'
+    implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
+    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.19.0'
+    implementation 'io.smallrye.config:smallrye-config:3.2.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.9.1'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.9.1'
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.23.1'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jib {
+    to {
+        // image = ${imageRepository}/${project.name}:${imageTag}
+        image = [[imageRepository, project.name].join('/'), imageTag].join(':')
+        if (project.hasProperty('imageCredHelper')) {
+            credHelper = imageCredHelper
+        }
+        if (project.hasProperty('imageUsername') && project.hasProperty('imagePassword')) {
+            auth {
+                username = imageUsername
+                password = imagePassword
+            }
+        }
+    }
+    container.mainClass = application.getMainClass().get()
+}
