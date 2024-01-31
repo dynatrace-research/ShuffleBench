@@ -1,4 +1,4 @@
-package com.dynatrace.research.shufflebench;
+package com.dynatrace.research.shufflebench.matcher;
 
 import com.dynatrace.research.shufflebench.matcher.MatcherService;
 import com.dynatrace.research.shufflebench.matcher.MatchingRule;
@@ -15,11 +15,11 @@ public class SerializableMatcherService<T extends Record> implements MatcherServ
 
   private transient MatcherService<T> matcherService;
 
-  private final SerializableSupplier<MatcherService<T>> matcherServiceFactory;
+  private final SerializableSupplier<T> matcherServiceFactory;
 
-  public SerializableMatcherService(SerializableSupplier<MatcherService<T>> matcherServiceFactory) {
+  public SerializableMatcherService(SerializableSupplier<T> matcherServiceFactory) {
     this.matcherServiceFactory = matcherServiceFactory;
-    this.matcherService = this.matcherServiceFactory.get();
+    this.buildMatcherServiceIfAbsent();
   }
 
   @Override
@@ -34,7 +34,7 @@ public class SerializableMatcherService<T extends Record> implements MatcherServ
 
   @Override
   public Collection<Map.Entry<String, T>> match(T record) {
-    buildMatcherServiceIfAbsent();
+    this.buildMatcherServiceIfAbsent();
     return this.matcherService.match(record);
   }
 
@@ -44,7 +44,7 @@ public class SerializableMatcherService<T extends Record> implements MatcherServ
     }
   }
 
-  public interface SerializableSupplier<T> extends Supplier<T>, Serializable {
+  public interface SerializableSupplier<T extends Record> extends Supplier<MatcherService<T>>, Serializable {
   }
 
 }

@@ -2,6 +2,7 @@ package com.dynatrace.research.shufflebench;
 
 import com.dynatrace.research.shufflebench.consumer.*;
 import com.dynatrace.research.shufflebench.matcher.MatcherService;
+import com.dynatrace.research.shufflebench.matcher.SerializableMatcherService;
 import com.dynatrace.research.shufflebench.matcher.SimpleMatcherService;
 import com.dynatrace.research.shufflebench.record.TimestampedRecord;
 import io.smallrye.config.SmallRyeConfig;
@@ -76,7 +77,8 @@ public class SparkStructuredStreamingShuffle {
         final boolean initCountRandom = config.getValue("consumer.init.count.random", Boolean.class);
         final long initCountSeed = config.getValue("consumer.init.count.seed", Long.class);
 
-        final StatefulConsumer consumer = new AdvancedStateConsumer("counter", outputRate, stateSizeBytes, initCountRandom, initCountSeed);
+        final StatefulConsumer consumer = new SerializableStatefulConsumer(
+                () -> new AdvancedStateConsumer("counter", outputRate, stateSizeBytes, initCountRandom, initCountSeed));
 
         Dataset<Tuple2<String, TimestampedRecord>> streamingWithKeys = kafkaStream
                 .as(Encoders.tuple(Encoders.BINARY(), Encoders.TIMESTAMP()))

@@ -2,6 +2,7 @@ package com.dynatrace.research.shufflebench;
 
 import com.dynatrace.research.shufflebench.consumer.*;
 import com.dynatrace.research.shufflebench.matcher.MatcherService;
+import com.dynatrace.research.shufflebench.matcher.SerializableMatcherService;
 import com.dynatrace.research.shufflebench.matcher.SimpleMatcherService;
 import com.dynatrace.research.shufflebench.record.*;
 import io.smallrye.config.SmallRyeConfig;
@@ -70,7 +71,8 @@ public class FlinkShuffle {
     final boolean initCountRandom = config.getValue("consumer.init.count.random", Boolean.class);
     final long initCountSeed = config.getValue("consumer.init.count.seed", Long.class);
 
-    final StatefulConsumer consumer = new AdvancedStateConsumer("counter", outputRate, stateSizeBytes, initCountRandom, initCountSeed);
+    final StatefulConsumer consumer = new SerializableStatefulConsumer(
+            () -> new AdvancedStateConsumer("counter", outputRate, stateSizeBytes, initCountRandom, initCountSeed));
 
     this.env = StreamExecutionEnvironment.getExecutionEnvironment();
 
