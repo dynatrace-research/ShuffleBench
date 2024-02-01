@@ -5,7 +5,7 @@ A benchmark for generic, large-scale shuffle operations on continuous stream of 
 Currently, we provide implementations for the following frameworks:
 
 * [Apache Flink](https://flink.apache.org/)
-* [Apache Spark](https://spark.apache.org/)
+* [Apache Spark (Structured Streaming)](https://spark.apache.org/)
 * [Apache Kafka Streams](https://kafka.apache.org/documentation/streams/)
 * [Hazlecast (with its Jet engine)](https://hazelcast.com/)
 
@@ -41,5 +41,5 @@ For Spark, we have to build and push the image manually (e.g., using the Docker 
 
 ```sh
 docker build -t <your.registry.com>/shufflebench/shufflebench-spark shuffle-spark/
-docker push shufflebench-spark
+docker push <your.registry.com>/shufflebench/shufflebench-spark
 ```
