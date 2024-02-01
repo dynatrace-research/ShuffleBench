@@ -17,7 +17,7 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
         - name: taskmanager
-          image: shufflebench/shuffle-flink:latest # Adjust image to yours
+          image: ghcr.io/dynatrace-research/shufflebench/shuffle-flink:latest
           resources:
             limits:
               memory: 4Gi
@@ -49,5 +49,3 @@ spec:
                 path: flink-conf.yaml
               - key: log4j-console.properties
                 path: log4j-console.properties
-      nodeSelector:
-        type: sut

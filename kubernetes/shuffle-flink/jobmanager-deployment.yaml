@@ -17,7 +17,7 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
         - name: jobmanager
-          image: shufflebench/shuffle-flink:latest # Adjust image to yours
+          image: ghcr.io/dynatrace-research/shufflebench/shuffle-flink:latest
           env:
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: "theodolite-kafka-kafka-bootstrap:9092"
@@ -29,6 +29,8 @@ spec:
               value: "0.2"
             - name: MATCHER_ZIPF_S
               value: "0.0"
+            - name: CONSUMER_INIT_COUNT_RANDOM
+              value: "true"
           resources:
             limits:
               memory: 2Gi
@@ -62,5 +64,3 @@ spec:
                 path: flink-conf.yaml
               - key: log4j-console.properties
                 path: log4j-console.properties
-      nodeSelector:
-        type: sut

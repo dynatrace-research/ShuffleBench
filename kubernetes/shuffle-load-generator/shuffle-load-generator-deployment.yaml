@@ -16,7 +16,7 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
         - name: shuffle-load-generator
-          image: shufflebench/load-generator:latest # Adjust image to yours
+          image: ghcr.io/dynatrace-research/shufflebench/load-generator:latest
           env:
             - name: SEED_STRING
               valueFrom:
@@ -30,5 +30,3 @@ spec:
               value: "250000"
             - name: "RECORD_SIZE_BYTES"
               value: "1024"
-      nodeSelector:
-        type: infra

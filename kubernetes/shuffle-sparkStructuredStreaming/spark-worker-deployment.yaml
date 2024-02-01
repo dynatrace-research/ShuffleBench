@@ -14,8 +14,9 @@ spec:
     spec:
       containers:
         - name: spark-worker
-          image: shuffle-spark:latest # Adjust image to yours
-          imagePullPolicy: Always
+          #image: shuffle-spark:latest # Adjust image to yours
+          image: shuffle-spark:latest
+          imagePullPolicy: Never
           command: ["/spark-worker"]
           volumeMounts:
             - name: shared-data
@@ -29,5 +30,3 @@ spec:
       volumes:
         - name: shared-data
           emptyDir: {}
-      nodeSelector:
-        type: sut

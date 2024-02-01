@@ -15,7 +15,7 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
         - name: shuffle-kstreams
-          image: shufflebench/shuffle-kstreams:latest # Adjust image to yours
+          image: ghcr.io/dynatrace-research/shufflebench/shuffle-kstreams:latest
           ports:
             - containerPort: 5555
               name: jmx
@@ -28,6 +28,8 @@ spec:
               value: "0.2"
             - name: MATCHER_ZIPF_S
               value: "0.0"
+            - name: CONSUMER_INIT_COUNT_RANDOM
+              value: "true"
             - name: "KAFKASTREAMS__COMMIT_INTERVAL_MS__"
               value: "5000"
             # - name: "KAFKASTREAMS__MAX_POLL_RECORDS__"
@@ -63,5 +65,3 @@ spec:
         - name: jmx-config
           configMap:
             name: shuffle-kstreams-jmx-configmap
-      nodeSelector:
-        type: sut

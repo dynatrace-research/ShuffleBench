@@ -15,7 +15,7 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
         - name: shuffle-hzcast
-          image: shufflebench/shuffle-hzcast:latest # Adjust image to yours
+          image: ghcr.io/dynatrace-research/shufflebench/shuffle-hzcast:latest
           ports:
             - containerPort: 5701
           env:
@@ -33,6 +33,8 @@ spec:
               value: "0.2"
             - name: MATCHER_ZIPF_S
               value: "0.0"
+            - name: CONSUMER_INIT_COUNT_RANDOM
+              value: "true"
             #- name: HAZELCAST_JET_JOB_PROCESSINGGUARANTEE
               #value: "NONE"
               #value: "AT_LEAST_ONCE"
@@ -70,5 +72,3 @@ spec:
         - name: jmx-config
           configMap:
             name: shuffle-hzcast-jmx-configmap
-      nodeSelector:
-        type: sut

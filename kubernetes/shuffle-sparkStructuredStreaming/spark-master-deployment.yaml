@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: spark-master
-          image: shufflebench/shuffle-spark:latest # Adjust image to yours
+          image: ghcr.io/dynatrace-research/shufflebench/shuffle-spark:latest
           command: ["/spark-master"]
           ports:
             - containerPort: 7077
@@ -24,16 +24,18 @@ spec:
               memory: 1Gi
               cpu: 300m
         - name: spark-submit
-          image: shufflebench/shuffle-spark:latest # Adjust image to yours
+          image: ghcr.io/dynatrace-research/shufflebench/shuffle-spark:latest
           env:
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: "theodolite-kafka-kafka-bootstrap:9092"
             - name: MATCHER_ZIPF_NUM_RULES
-              value: "10000"
+              value: "1000000"
             - name: MATCHER_ZIPF_TOTAL_SELECTIVITY
               value: "0.2"
             - name: MATCHER_ZIPF_S
               value: "0.0"
+            - name: CONSUMER_INIT_COUNT_RANDOM
+              value: "true"
             # - name: SPARK_MAX_OFFSETS_PER_TRIGGER
             #   value: "10000000"
             - name: SPARK_EXECUTOR_MEMORY
@@ -66,8 +68,11 @@ spec:
           volumeMounts:
             - name: shared-data
               mountPath: /tmp/spark/ # to store the checkpoints
-        - name: sparkfilemonitor
-          image: shufflebench/shuffle-spark:spark-file-monitor # Adjust image to yours
+        - name: offset-committer
+          image: ghcr.io/dynatrace-research/shufflebench/shuffle-spark-offset-committer:latest
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "theodolite-kafka-kafka-bootstrap:9092"
           resources:
             limits:
               memory: "256Mi"
@@ -78,5 +83,3 @@ spec:
       volumes:
         - name: shared-data
           emptyDir: {}
-      nodeSelector:
-        type: sut

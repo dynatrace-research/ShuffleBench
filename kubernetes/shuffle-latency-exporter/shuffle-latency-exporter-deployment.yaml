@@ -15,9 +15,7 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
         - name: shuffle-latency-exporter
-          image: shufflebench/latency-exporter:latest # Adjust image to yours
+          image: ghcr.io/dynatrace-research/shufflebench/latency-exporter:latest
           env:
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: "theodolite-kafka-kafka-bootstrap:9092"
-      nodeSelector:
-        type: infra
