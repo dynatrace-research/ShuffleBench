@@ -14,9 +14,7 @@ spec:
     spec:
       containers:
         - name: spark-worker
-          #image: shuffle-spark:latest # Adjust image to yours
-          image: shuffle-spark:latest
-          imagePullPolicy: Never
+          image: ghcr.io/dynatrace-research/shufflebench/shuffle-spark:latest
           command: ["/spark-worker"]
           volumeMounts:
             - name: shared-data
