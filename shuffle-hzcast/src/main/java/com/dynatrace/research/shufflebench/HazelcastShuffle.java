@@ -1,6 +1,7 @@
 package com.dynatrace.research.shufflebench;
 
 import com.dynatrace.research.shufflebench.consumer.AdvancedStateConsumer;
+import com.dynatrace.research.shufflebench.consumer.SerializableStatefulConsumer;
 import com.dynatrace.research.shufflebench.consumer.State;
 import com.dynatrace.research.shufflebench.consumer.StatefulConsumer;
 import com.dynatrace.research.shufflebench.matcher.MatcherService;
@@ -106,8 +107,9 @@ public class HazelcastShuffle {
                 0x2e3fac4f58fc98b4L);
           }
         });
-
-    final StatefulConsumer consumer = new AdvancedStateConsumer("counter", outputRate, stateSizeBytes, initCountRandom, initCountSeed);
+    
+    final StatefulConsumer consumer = new SerializableStatefulConsumer(
+            () -> new AdvancedStateConsumer("counter", outputRate, stateSizeBytes, initCountRandom, initCountSeed));
 
     this.pipeline = Pipeline.create();
     pipeline.readFrom(KafkaSources.<Void, Record, TimestampedRecord>kafka(
