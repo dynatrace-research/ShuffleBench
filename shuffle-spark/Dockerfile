@@ -24,9 +24,9 @@ RUN mkdir -p /opt && \
 
 COPY build/libs/shuffle-spark-1.0-SNAPSHOT.jar .
 
-#ADD common.sh spark-master spark-worker /
+ADD common.sh spark-master spark-worker /
 RUN cd /
-#RUN chmod +x spark-master
-#RUN chmod +x spark-worker
-#ADD spark-defaults.conf /opt/spark/conf/spark-defaults.conf
+RUN chmod +x spark-master
+RUN chmod +x spark-worker
+ADD spark-defaults.conf /opt/spark/conf/spark-defaults.conf
 ENV PATH $PATH:/opt/spark/bin
