@@ -54,7 +54,7 @@ spec:
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
-        consumerGroup: shuffle-spark
+        consumerGroup: shufflebench-spark
         thresholdRelToLoad: 0.01
         externalSloUrl: "http://localhost:80/evaluate-slope"
         warmup: 120 # in seconds
