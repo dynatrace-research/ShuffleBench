@@ -1,0 +1,48 @@
+cff-version: 1.2.0
+message: "If you use ShuffleBench, please cite it using these metadata."
+authors:
+  - family-names: Henning
+    given-names: "Sören"
+    orcid: "https://orcid.org/0000-0001-6912-2549"
+  - family-names: Vogel
+    given-names: Adriano
+    orcid: "https://orcid.org/0000-0003-3299-2641"
+  - family-names: Leichtfried
+    given-names: Michael
+    orcid: "https://orcid.org/0000-0002-4415-6694"
+  - family-names: Ertl
+    given-names: Otmar
+    orcid: "https://orcid.org/0000-0001-7322-6332"
+  - family-names: Rabiser
+    given-names: Rick
+    orcid: "https://orcid.org/0000-0003-3862-1112"
+title: ShuffleBench
+repository-code: "https://github.com/dynatrace-research/ShuffleBench"
+license: "Apache-2.0"
+doi: "10.1145/3629526.3645036"
+preferred-citation:
+  type: conference-paper
+  authors:
+    - family-names: Henning
+      given-names: "Sören"
+      orcid: "https://orcid.org/0000-0001-6912-2549"
+    - family-names: Vogel
+      given-names: Adriano
+      orcid: "https://orcid.org/0000-0003-3299-2641"
+    - family-names: Leichtfried
+      given-names: Michael
+      orcid: "https://orcid.org/0000-0002-4415-6694"
+    - family-names: Ertl
+      given-names: Otmar
+      orcid: "https://orcid.org/0000-0001-7322-6332"
+    - family-names: Rabiser
+      given-names: Rick
+      orcid: "https://orcid.org/0000-0003-3862-1112"  
+  conference:
+    name: "15th ACM/SPEC International Conference on Performance Engineering"
+    date-start: 2024-05-07
+    date-end: 2024-05-11
+  title: "ShuffleBench: A Benchmark for Large-Scale Data Shuffling Operations with Distributed Stream Processing Frameworks"
+  year: 2024
+  doi: "10.1145/3629526.3645036"
+  status: "in-press"

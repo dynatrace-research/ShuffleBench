@@ -43,3 +43,12 @@ For Spark, we have to build and push the image manually (e.g., using the Docker 
 docker build -t <your.registry.com>/shufflebench/shufflebench-spark shuffle-spark/
 docker push <your.registry.com>/shufflebench/shufflebench-spark
 ```
+
+## How to Cite
+
+If you use ShuffleBench in your research, please cite:
+
+> Sören Henning, Adriano Vogel, Michael Leichtfried, Otmar Ertl, and Rick Rabiser. 2024. ShuffleBench: A Benchmark for Large-Scale Data Shuffling Operations with Distributed Stream Processing Frameworks. In *Proceedings of the 2024 ACM/SPEC International Conference on Performance Engineering (ICPE '24). [arXiv:2403.04570](
+https://doi.org/10.48550/arXiv.2403.04570) <!-- DOI: [10.1145/3629526.3645036](https://doi.org/10.1145/3629526.3645036) -->
+
+
