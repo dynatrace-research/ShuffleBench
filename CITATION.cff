@@ -39,9 +39,10 @@ preferred-citation:
       given-names: Rick
       orcid: "https://orcid.org/0000-0003-3862-1112"  
   conference:
-    name: "15th ACM/SPEC International Conference on Performance Engineering"
+    name: "15th ACM/SPEC International Conference on Performance Engineering (ICPE '24)"
     date-start: 2024-05-07
     date-end: 2024-05-11
+  collection-title: "Proceedings of the 15th ACM/SPEC International Conference on Performance Engineering"
   title: "ShuffleBench: A Benchmark for Large-Scale Data Shuffling Operations with Distributed Stream Processing Frameworks"
   year: 2024
   doi: "10.1145/3629526.3645036"
