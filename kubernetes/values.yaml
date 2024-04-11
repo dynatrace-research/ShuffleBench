@@ -14,7 +14,9 @@ strimzi:
       "auto.create.topics.enable": false
       "log.retention.ms": "7200000" # 2h
       "transaction.max.timeout.ms": "7200000" # 2h
-    jvmOptions: {}
+    jvmOptions: # Will become default with Theodolite v0.10
+      "-Xmx": null
+      "-Xms": null
     storage:
       type: persistent-claim
       size: 500Gi
