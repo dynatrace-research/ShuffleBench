@@ -1,11 +1,8 @@
 kafkaClient:
   enabled: true
-  nodeSelector:
-    type: infra
+
 kcat:
   enabled: true
-  nodeSelector:
-    type: infra
 
 strimzi:
   kafka:
@@ -17,12 +14,8 @@ strimzi:
     jvmOptions: # Will become default with Theodolite v0.10
       "-Xmx": null
       "-Xms": null
-    storage:
-      type: persistent-claim
-      size: 500Gi
-      class: kafka
-      deleteClaim: true
   zookeeper:
+    replicas: 3
     zooEntrance:
       enabled: false
       zookeeperClient:
@@ -34,6 +27,9 @@ kube-prometheus-stack:
   prometheus:
     prometheusSpec:
       scrapeInterval: 5s
+
+prometheus: 
+  scrapeInterval: 5s
 
 operator:
   resultsVolume:

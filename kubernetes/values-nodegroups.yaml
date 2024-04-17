@@ -1,0 +1,84 @@
+kafkaClient:
+  nodeSelector:
+    type: infra
+
+kcat:
+  nodeSelector:
+    type: infra
+
+strimzi-kafka-operator:
+  nodeSelector:
+    type: infra
+
+strimzi:
+  kafka:
+    template:
+      pod:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: type
+                  operator: In
+                  values:
+                  - kafka
+  zookeeper:
+    template:
+      pod:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: type
+                  operator: In
+                  values:
+                  - infra
+  topicOperator:
+    template:
+      pod:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: type
+                  operator: In
+                  values:
+                  - infra
+  kafkaExporter:
+    template:
+      pod:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: type
+                  operator: In
+                  values:
+                  - infra
+
+kube-prometheus-stack:
+  prometheusOperator:
+    nodeSelector:
+      type: infra
+  grafana:
+    nodeSelector:
+      type: infra
+  prometheus:
+    prometheusSpec:
+      nodeSelector:
+        type: infra
+  kube-state-metrics:
+    nodeSelector:
+      type: infra
+
+prometheus: 
+  nodeSelector:
+    type: infra
+
+operator:
+  nodeSelector:
+    type: infra

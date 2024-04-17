@@ -42,15 +42,15 @@ Not all Theodolite features we need, are already released. While this will happe
 ```sh
 git clone git@github.com:cau-se/theodolite.git
 helm dependencies update theodolite/helm
-helm install theodolite theodolite/helm -f https://raw.githubusercontent.com/cau-se/theodolite/main/helm/preconfigs/extended-metrics.yaml -f values.yaml -f values-aws-nodegroups.yaml
+helm install theodolite theodolite/helm -f https://raw.githubusercontent.com/cau-se/theodolite/main/helm/preconfigs/extended-metrics.yaml -f values.yaml -f values-nodegroups.yaml -f values-aws-kafka-storage.yaml
 ```
 
-Once the required Theodolite version has been released (v0.9), we can install it with:
+Once the required Theodolite version has been released (v0.10), we can install it with:
 
 ```sh
 helm repo add theodolite https://www.theodolite.rocks
 helm repo update
-helm install theodolite theodolite/theodolite -f https://raw.githubusercontent.com/cau-se/theodolite/main/helm/preconfigs/extended-metrics.yaml -f values.yaml -f values-aws-nodegroups.yaml
+helm install theodolite theodolite/theodolite -f https://raw.githubusercontent.com/cau-se/theodolite/main/helm/preconfigs/extended-metrics.yaml -f values.yaml -f values-nodegroups.yaml -f values-aws-kafka-storage.yaml
 ```
 
 ## Manually Run Benchmark Implementations
