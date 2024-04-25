@@ -27,6 +27,9 @@ kube-prometheus-stack:
   prometheus:
     prometheusSpec:
       scrapeInterval: 5s
+  kube-state-metrics:
+    metricLabelsAllowlist:
+      - nodes=[type]
 
 prometheus: 
   scrapeInterval: 5s
