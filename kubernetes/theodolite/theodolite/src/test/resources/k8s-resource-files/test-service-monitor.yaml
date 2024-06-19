@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: titan-ccp-aggregation
+    appScope: titan-ccp
+  name: test-service-monitor
+spec:
+  selector:
+    matchLabels:
+      app: flink
+  endpoints:
+    - port: metrics
+      interval: 1s

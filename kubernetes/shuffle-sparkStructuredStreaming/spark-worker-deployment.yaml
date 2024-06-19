@@ -3,7 +3,7 @@ apiVersion: apps/v1
 metadata:
   name: spark-worker
 spec:
-  replicas: 9
+  replicas: 8
   selector:
     matchLabels:
       component: spark-worker
@@ -14,20 +14,27 @@ spec:
     spec:
       containers:
         - name: spark-worker
-          image: shuffle-spark:latest # Adjust image to yours
+          #image: ghcr.io/dynatrace-research/shufflebench/shuffle-spark:latest -> THIS IMAGE DOES NOT WORK FOR FAULT TOLERANCE IN SPARK. IT IS NECESSARY TO BUILD A NEW IMAGE WITH THE CHANGES IN SPARK'S CODE (SEE SHUFFLE-SPARK MODULE).
           imagePullPolicy: Always
           command: ["/spark-worker"]
+#          volumeMounts:
+#            - name: shared-data
+#              mountPath: /tmp/spark/ # to store the checkpoints
           volumeMounts:
-            - name: shared-data
-              mountPath: /tmp/spark/ # to store the checkpoints
+            - name: persistent-storage
+              mountPath: /tmp/spark/ # to store the checkpoints. EFS was used to provide the storage infrastructure following all the steps from <https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html>
           ports:
             - containerPort: 8081
           resources:
+            requests:
+              memory: 2Gi
+              cpu: 1000m #
             limits:
-              memory: 4Gi
+              memory: 3Gi
               cpu: 1000m
       volumes:
-        - name: shared-data
-          emptyDir: {}
-      nodeSelector:
-        type: sut
+#        - name: shared-data
+#          emptyDir: {}
+        - name: persistent-storage
+          persistentVolumeClaim:
+            claimName: efs-claim #change accordingly to your volume and filesystem. EFS was used to provide the storage infrastructure following all the steps from <https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html>

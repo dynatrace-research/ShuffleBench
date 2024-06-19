@@ -1,0 +1,23 @@
+{{- if .Values.prometheus.enabled -}}
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: {{ template "theodolite.fullname" . }}-prometheus
+spec:
+  serviceAccountName: {{ template "theodolite.fullname" . }}-prometheus
+  {{- with .Values.prometheus.podMetadata }}
+  podMetadata:
+    {{- toYaml . | nindent 8 }}
+  {{- end}}
+  podMonitorSelector: {}
+  serviceMonitorSelector: {}
+  resources:
+    requests:
+      memory: 400Mi
+  scrapeInterval: {{ .Values.prometheus.scrapeInterval }}
+  enableAdminAPI: {{ .Values.prometheus.enableAdminAPI }}
+  {{- with .Values.prometheus.nodeSelector }}
+  nodeSelector:
+    {{- toYaml . | nindent 8 }}
+  {{- end}}
+{{- end}}

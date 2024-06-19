@@ -1,10 +1,9 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/weaveworks/eksctl/main/pkg/apis/eksctl.io/v1alpha5/assets/schema.json
-
 apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 
 metadata:
-  name: shufflebench
+  name: shufflebench-fault-recovery
   region: us-east-1
 
 nodeGroups:
@@ -12,25 +11,33 @@ nodeGroups:
     labels:
       type: infra
     instanceType: m6i.xlarge
-    desiredCapacity: 4
+    desiredCapacity: 2
     iam:
       withAddonPolicies:
         ebs: true
-  - name: sut
+  - name: manager
     labels:
-      type: sut
-    instanceType: m6i.xlarge
-    desiredCapacity: 3
+      type: manager
+    instanceType: m6i.large #m6g.large
+    desiredCapacity: 1
+    iam:
+      withAddonPolicies:
+        ebs: true
+  - name: workers
+    labels:
+      type: workers
+    instanceType: c5.large
+    desiredCapacity: 8
     iam:
       withAddonPolicies:
         ebs: true
   - name: kafka
     labels:
       type: kafka
-    #instanceType: m6i.large
     instanceType: m6i.2xlarge
-    desiredCapacity: 3
+    desiredCapacity: 2
     volumeSize: 80
+    #volumeSize: 200 # testing for longer executions
     iam:
       withAddonPolicies:
         ebs: true

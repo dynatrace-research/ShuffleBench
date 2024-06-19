@@ -1,0 +1,23 @@
+plugins {
+    id 'theodolite.java-commons'
+}
+
+repositories {
+  mavenCentral()
+  maven {
+    url "https://oss.sonatype.org/content/repositories/snapshots/"
+  }
+  maven {
+    url 'https://packages.confluent.io/maven/'
+  }
+}
+
+dependencies {
+  // These dependencies are used internally, and not exposed to consumers on their own compile classpath.
+  implementation project(':commons')
+  // implementation 'org.slf4j:slf4j-simple:1.7.25'
+  implementation 'org.apache.kafka:kafka-streams:3.1.0'
+
+  // Use JUnit test framework
+  testImplementation 'junit:junit:4.12'
+}

@@ -47,6 +47,8 @@ public class FlinkShuffle {
     final Optional<String> deliveryGuarantee = config.getOptionalValue("flink.delivery.guarantee", String.class);
     final boolean checkpointingEnabled = config.getValue("flink.checkpointing.enable", Boolean.class);
     final int checkpointingIntervalMs = config.getValue("flink.checkpointing.interval.ms", Integer.class);
+    final String checkpointDirectory = config.getValue("flink.checkpointing.directory", String.class);
+
 
     final SmallRyeConfig smallRyeConfig = config.unwrap(SmallRyeConfig.class);
     final Map<Double, Integer> selectivities =
@@ -91,6 +93,7 @@ public class FlinkShuffle {
     if (checkpointingEnabled) {
       // CheckpointingMode.EXACTLY_ONCE is the default
       this.env.enableCheckpointing(checkpointingIntervalMs);
+      env.getCheckpointConfig().setCheckpointStorage(checkpointDirectory);
     }
 
     KafkaSource<Record> source = KafkaSource.<Record>builder()

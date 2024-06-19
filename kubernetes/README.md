@@ -40,17 +40,9 @@ We use it currently for two reasons:
 Not all Theodolite features we need, are already released. While this will happen soon, we currently have to install Theodolite by first cloning its git repository:
 
 ```sh
-git clone git@github.com:cau-se/theodolite.git
 helm dependencies update theodolite/helm
-helm install theodolite theodolite/helm -f https://raw.githubusercontent.com/cau-se/theodolite/main/helm/preconfigs/extended-metrics.yaml -f values.yaml -f values-aws-nodegroups.yaml
-```
 
-Once the required Theodolite version has been released (v0.9), we can install it with:
-
-```sh
-helm repo add theodolite https://www.theodolite.rocks
-helm repo update
-helm install theodolite theodolite/theodolite -f https://raw.githubusercontent.com/cau-se/theodolite/main/helm/preconfigs/extended-metrics.yaml -f values.yaml -f values-aws-nodegroups.yaml
+helm install theodolite theodolite/helm -f theodolite/helm/preconfigs/extended-metrics.yaml -f values.yaml -f values-aws-nodegroups.yaml
 ```
 
 ## Manually Run Benchmark Implementations
@@ -77,6 +69,7 @@ kubectl delete -f shuffle-latency-exporter
 
 Doing this manually for many different configurations can be exhaustive work. We now see how to automate this with Theodolite.
 
+
 ## Install Theodolite Benchmarks
 
 Theodolite automates benchmarking in Kubernetes by providing [Kubernetes CRDs](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) for benchmarks and their executions. We provide one benchmark for each evaluated framework. To install them, run the following commands:
@@ -97,13 +90,64 @@ kubectl apply -f theodolite-benchmark-flink.yaml
 kubectl apply -f theodolite-benchmark-spark.yaml
 ```
 
-## Run Theodolite Benchmarks
+## Run Fault Tolerance Benchmarks
 
 To execute the installed benchmarks, Theodolite `Execution`s have to be deployed.
 
-*Coming soon...*
+Apply the YAML files from the evaluation/faul-tolerance folder
+
+## Install Chaos Mesh
+
+```sh
+helm repo add chaos-mesh https://charts.chaos-mesh.org
+
+```
+
+```sh
+kubectl create ns chaos-mesh
+
+```
+
+
+```sh
+helm install chaos-mesh chaos-mesh/chaos-mesh -n=chaos-mesh --set dashboard.securityMode=false
+```
+
+From <https://chaos-mesh.org/docs/quick-start/> 
+
+
+
+Verify
+``` sh
+kubectl get po -n chaos-mesh
+```
+
+Access Chaos Mesh Web UI
+``` sh
+kubectl port-forward -n chaos-mesh svc/chaos-dashboard 2333:2333
+```
+
+## Run Chaos Mesh
+To execute the experiments, it can be done in the web UI or by applying the YAML files inside the evaluation/chaos-mesh folder
+
+
+## Run Fault Tolerance Benchmarks
+
+To execute the installed benchmarks, Theodolite `Execution`s have to be deployed.
+
+Apply the YAML files from the evaluation/fault-tolerance folder
+
+## Checkpoints for Flink and Spark need a reliable storage infrastruture
+EFS was used to provide the storage infrastructure following all the steps from <https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html>
 
 ## Uninstall
+
+Delete the EFS storage related, such as mount targets, volumes, filesystem, etc
+
+Uninstall Chaos Mesh
+```sh
+curl -sSL https://mirrors.chaos-mesh.org/v2.6.2/install.sh | bash -s -- --template | kubectl delete -f -
+```
 
 To uninstall Theodolite, it is sufficient to run:
 

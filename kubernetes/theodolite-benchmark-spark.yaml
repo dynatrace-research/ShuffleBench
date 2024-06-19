@@ -54,12 +54,41 @@ spec:
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
-        consumerGroup: shuffle-spark
+        consumerGroup: shufflebench-spark
         thresholdRelToLoad: 0.01
         externalSloUrl: "http://localhost:80/evaluate-slope"
-        warmup: 120 # in seconds
-    # Normal, "read-only" metrics:
-    - name: "throughput"
+        warmup: 300 # in seconds
+
+    - name: "input_throughput_2s"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "sum by(consumergroup,topic) (rate(kafka_consumergroup_current_offset{topic='input'}[2s]) >= 0)"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: gte
+        threshold: 0
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+
+    - name: "input_throughput_5s"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "sum by(consumergroup,topic) (rate(kafka_consumergroup_current_offset{topic='input'}[5s]) >= 0)"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: gte
+        threshold: 0
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "input_throughput_10s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
@@ -68,510 +97,756 @@ spec:
         promQLQuery: "sum by(consumergroup,topic) (rate(kafka_consumergroup_current_offset{topic='input'}[10s]) >= 0)"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p05"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "input_throughput_30s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.05, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "sum by(consumergroup,topic) (rate(kafka_consumergroup_current_offset{topic='input'}[30s]) >= 0)"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p10"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "input_throughput_60s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.10, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "sum by(consumergroup,topic) (rate(kafka_consumergroup_current_offset{topic='input'}[60s]) >= 0)"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p15"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "detailedInputThroughput_5s_per_partition"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.15, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "rate(kafka_consumergroup_current_offset{topic='input'}[5s])"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p20"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "detailedInputThroughput_5s_per_broker"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.20, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "rate(kafka_server_brokertopicmetrics_messagesin_total{topic='input'}[5s])"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p25"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "outputthroughput_2s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.25, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "sum by (topic) (rate(kafka_server_brokertopicmetrics_messagesin_total{topic='output'}[2s]))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p30"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "outputthroughput_5s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.30, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "sum by (topic) (rate(kafka_server_brokertopicmetrics_messagesin_total{topic='output'}[5s]))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p35"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "outputthroughput_10s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.35, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "sum by (topic) (rate(kafka_server_brokertopicmetrics_messagesin_total{topic='output'}[10s]))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p40"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "outputthroughput_30s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.40, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "sum by (topic) (rate(kafka_server_brokertopicmetrics_messagesin_total{topic='output'}[30s]))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p45"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "outputthroughput_60s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.45, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "sum by (topic) (rate(kafka_server_brokertopicmetrics_messagesin_total{topic='output'}[60s]))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p50"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "detailed_output_throughput_per_partition"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.50, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "rate(kafka_consumergroup_current_offset{topic='output'}[5s])"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p55"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+
+    - name: "detailed_output_throughput_per_broker"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.55, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "rate(kafka_server_brokertopicmetrics_messagesin_total{topic='output'}[5s])"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p60"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+
+
+    - name: "latency_p50_5s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.60, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "histogram_quantile(0.5, sum(rate(shufflebench_latency_seconds_bucket[5s])) by (le))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p65"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "latency_p90_5s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.65, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "histogram_quantile(0.90, sum(rate(shufflebench_latency_seconds_bucket[5s])) by (le))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p70"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "latency_p95_5s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.70, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "histogram_quantile(0.95, sum(rate(shufflebench_latency_seconds_bucket[5s])) by (le))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p75"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "latency_p99_5s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.75, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "histogram_quantile(0.99, sum(rate(shufflebench_latency_seconds_bucket[5s])) by (le))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p80"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "latency_p50_10s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.80, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "histogram_quantile(0.5, sum(rate(shufflebench_latency_seconds_bucket[10s])) by (le))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p85"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "latency_p90_10s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.85, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "histogram_quantile(0.90, sum(rate(shufflebench_latency_seconds_bucket[10s])) by (le))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p90"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "latency_p95_10s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.90, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "histogram_quantile(0.95, sum(rate(shufflebench_latency_seconds_bucket[10s])) by (le))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p95"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "latency_p99_10s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.95, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "histogram_quantile(0.99, sum(rate(shufflebench_latency_seconds_bucket[10s])) by (le))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p99"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "latency_p50_30s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.99, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "histogram_quantile(0.5, sum(rate(shufflebench_latency_seconds_bucket[30s])) by (le))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p100"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "latency_p90_30s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(1.00, sum(rate(shufflebench_latency_seconds_bucket[20s])) by (le))"
+        promQLQuery: "histogram_quantile(0.90, sum(rate(shufflebench_latency_seconds_bucket[30s])) by (le))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 120 # in seconds
-    - name: "latency_p05_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "latency_p95_30s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.05, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "histogram_quantile(0.95, sum(rate(shufflebench_latency_seconds_bucket[30s])) by (le))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p10_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    - name: "latency_p99_30s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.10, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "histogram_quantile(0.99, sum(rate(shufflebench_latency_seconds_bucket[30s])) by (le))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p15_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+
+    - name: "numberOfWorkers"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.15, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "count(kube_pod_info{pod=~\"spark-worker.*\"})"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p20_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+
+    - name: "PodsCPUsPercentageUtilizationPerPod60s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.20, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "avg by (pod) (irate(container_cpu_usage_seconds_total{pod=~\"spark-worker.*\"}[60s])) * 100"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p25_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "ManagerPodsCPUsPercentageUtilization60s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.25, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "avg by (pod) (irate(container_cpu_usage_seconds_total{pod=~\"spark-master.*\"}[60s])) * 100"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p30_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "PodsCPUsTotalUtilization60s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.30, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "avg(avg by (pod) (irate(container_cpu_usage_seconds_total{pod=~\"spark-worker.*\"}[60s])) * 100) without (pod)"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p35_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+
+    #    - name: "nodesCPUsPercentageUtilization60s"
+    #      sloType: generic
+    #      prometheusUrl: "http://prometheus-operated:9090"
+    #      offset: 0
+    #      properties:
+    #        externalSloUrl: "http://localhost:8082"
+    #        promQLQuery: "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[60s])) * 100)"
+    #        queryAggregation: mean
+    #        repetitionAggregation: median
+    #        operator: gte
+    #        threshold: 0
+    #        warmup: 300 # in seconds
+    #        promQLStepSeconds: 1 # <--
+    #        takeOnlyFirstMetric: "false" # <--
+
+
+    - name: "podsIOMemoryPerPod"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.35, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "avg by (pod) (irate(container_memory_usage_bytes{namespace=\"default\", pod=~\"spark-worker.*\"}[1m]))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p40_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "podsnetworktransmit1m"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.40, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "sum(irate(container_network_transmit_bytes_total{pod=~\"spark-worker.*\"}[1m])) by (pod)"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p45_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "podsnetworkreceive1m"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.45, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "sum(irate(container_network_receive_bytes_total{pod=~\"spark-worker.*\"}[1m])) by (pod)"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p50_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "nodesCPUsPercentageUtilization30s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.50, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "100 - (avg by(instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[30s])) * 100)"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p55_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+        
+    - name: "workerNodesCPUsPercentageUtilization_2s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.55, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[2s])) * 100) and on (instance) (label_replace(kube_node_info and on (node) kube_node_labels {label_type=\"workers\"}, \"instance\", \"$1:9100\", \"internal_ip\", \"(.*)\"))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p60_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "Average_workerNodesCPUsPercentageUtilization_2s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.60, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "avg(100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[2s])) * 100) and on (instance) (label_replace(kube_node_info and on (node) kube_node_labels {label_type=\"workers\"}, \"instance\", \"$1:9100\", \"internal_ip\", \"(.*)\")))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p65_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "workerNodesTotalMemoryUsageWithoutConsidBufferedandCachedGB" # GB # This calculation gives us the memory usage without cache and buffers, providing a more accurate view of the memory actively used by applications and the system that cannot be easily reclaimed.
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.65, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "(node_memory_MemTotal_bytes - node_memory_MemFree_bytes - (node_memory_Buffers_bytes + node_memory_Cached_bytes))/1024/1024/1024 and on (instance) (label_replace(kube_node_info and on (node) kube_node_labels {label_type=\"workers\"}, \"instance\", \"$1:9100\", \"internal_ip\", \"(.*)\"))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p70_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "workerNodesNetworkReceiveMB_2s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.70, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "sum(irate(node_network_receive_bytes_total{device=~\"eth.*\"}[2s])/1024/1024) by (instance) and on (instance) (label_replace(kube_node_info and on (node) kube_node_labels {label_type=\"workers\"}, \"instance\", \"$1:9100\", \"internal_ip\", \"(.*)\"))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p75_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "workerNodesNetworkTransmitMB_2s" #mb
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.75, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "sum(irate(node_network_transmit_bytes_total{device=~\"eth.*\"}[2s])/1024/1024) by (instance) and on (instance) (label_replace(kube_node_info and on (node) kube_node_labels {label_type=\"workers\"}, \"instance\", \"$1:9100\", \"internal_ip\", \"(.*)\"))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p80_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "workerNodesDiskReadMB_2s" #mb/s
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.80, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "sum(irate(node_disk_read_bytes_total[2s]) / 1024 / 1024) by (instance) and on (instance) (label_replace(kube_node_info and on (node) kube_node_labels {label_type=\"workers\"}, \"instance\", \"$1:9100\", \"internal_ip\", \"(.*)\"))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p85_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "workerNodesDiskWrittenMB_2s" #mb/s
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.85, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "sum(irate(node_disk_written_bytes_total[2s]) / 1024 / 1024) by (instance) and on (instance) (label_replace(kube_node_info and on (node) kube_node_labels {label_type=\"workers\"}, \"instance\", \"$1:9100\", \"internal_ip\", \"(.*)\"))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p90_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "kafkaBrokerNodesCPUsPercentageUtilization_2s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.90, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[2s])) * 100) and on (instance) (label_replace(kube_node_info and on (node) kube_node_labels {label_type=\"kafka\"}, \"instance\", \"$1:9100\", \"internal_ip\", \"(.*)\"))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p95_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "kafkaBrokerNodesTotalMemoryUsageWithoutConsidBufferedandCachedGB" # GB This calculation gives us the memory usage without cache and buffers, providing a more accurate view of the memory actively used by applications and the system that cannot be easily reclaimed.
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.95, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "(node_memory_MemTotal_bytes - node_memory_MemFree_bytes - (node_memory_Buffers_bytes + node_memory_Cached_bytes))/1024/1024/1024 and on (instance) (label_replace(kube_node_info and on (node) kube_node_labels {label_type=\"kafka\"}, \"instance\", \"$1:9100\", \"internal_ip\", \"(.*)\"))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p99_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "kafkaBrokerNodesNetworkReceiveMB_2s"
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(0.99, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "sum(irate(node_network_receive_bytes_total{device=~\"eth.*\"}[2s])/1024/1024) by (instance) and on (instance) (label_replace(kube_node_info and on (node) kube_node_labels {label_type=\"kafka\"}, \"instance\", \"$1:9100\", \"internal_ip\", \"(.*)\"))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
-    - name: "latency_p100_total"
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "kafkaBrokerNodesNetworkTransmitMB_2s" #mb
       sloType: generic
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"
-        promQLQuery: "histogram_quantile(1.00, sum(rate(shufflebench_latency_seconds_bucket[720s])) by (le))"
+        promQLQuery: "sum(irate(node_network_transmit_bytes_total{device=~\"eth.*\"}[2s])/1024/1024) by (instance) and on (instance) (label_replace(kube_node_info and on (node) kube_node_labels {label_type=\"kafka\"}, \"instance\", \"$1:9100\", \"internal_ip\", \"(.*)\"))"
         queryAggregation: mean
         repetitionAggregation: median
-        operator: "true"
+        operator: gte
         threshold: 0
-        warmup: 180 # in seconds
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "kafkaBrokerNodesDiskReadMB_2s" #mb/s
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "sum(irate(node_disk_read_bytes_total[2s]) / 1024 / 1024) by (instance) and on (instance) (label_replace(kube_node_info and on (node) kube_node_labels {label_type=\"kafka\"}, \"instance\", \"$1:9100\", \"internal_ip\", \"(.*)\"))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: gte
+        threshold: 0
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "kafkaBrokerNodesDiskWrittenMB_2s" #mb/s
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "sum(irate(node_disk_written_bytes_total[2s]) / 1024 / 1024) by (instance) and on (instance) (label_replace(kube_node_info and on (node) kube_node_labels {label_type=\"kafka\"}, \"instance\", \"$1:9100\", \"internal_ip\", \"(.*)\"))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: gte
+        threshold: 0
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "managerNodesCPUsPercentageUtilization_2s"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[2s])) * 100) and on (instance) (label_replace(kube_node_info and on (node) kube_node_labels {label_type=\"manager\"}, \"instance\", \"$1:9100\", \"internal_ip\", \"(.*)\"))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: gte
+        threshold: 0
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "managerNodesTotalMemoryUsageWithoutConsidBufferedandCachedGB" # GB This calculation gives us the memory usage without cache and buffers, providing a more accurate view of the memory actively used by applications and the system that cannot be easily reclaimed.
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "(node_memory_MemTotal_bytes - node_memory_MemFree_bytes - (node_memory_Buffers_bytes + node_memory_Cached_bytes))/1024/1024/1024 and on (instance) (label_replace(kube_node_info and on (node) kube_node_labels {label_type=\"manager\"}, \"instance\", \"$1:9100\", \"internal_ip\", \"(.*)\"))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: gte
+        threshold: 0
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "managerNodesNetworkReceiveMB_2s"
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "sum(irate(node_network_receive_bytes_total{device=~\"eth.*\"}[2s])/1024/1024) by (instance) and on (instance) (label_replace(kube_node_info and on (node) kube_node_labels {label_type=\"manager\"}, \"instance\", \"$1:9100\", \"internal_ip\", \"(.*)\"))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: gte
+        threshold: 0
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "managerNodesNetworkTransmitMB_2s" #mb
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "sum(irate(node_network_transmit_bytes_total{device=~\"eth.*\"}[2s])/1024/1024) by (instance) and on (instance) (label_replace(kube_node_info and on (node) kube_node_labels {label_type=\"manager\"}, \"instance\", \"$1:9100\", \"internal_ip\", \"(.*)\"))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: gte
+        threshold: 0
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "managerNodesDiskReadMB_2s" #mb/s
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "sum(irate(node_disk_read_bytes_total[2s]) / 1024 / 1024) by (instance) and on (instance) (label_replace(kube_node_info and on (node) kube_node_labels {label_type=\"manager\"}, \"instance\", \"$1:9100\", \"internal_ip\", \"(.*)\"))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: gte
+        threshold: 0
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--
+
+    - name: "managerNodesDiskWrittenMB_2s" #mb/s
+      sloType: generic
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "sum(irate(node_disk_written_bytes_total[2s]) / 1024 / 1024) by (instance) and on (instance) (label_replace(kube_node_info and on (node) kube_node_labels {label_type=\"manager\"}, \"instance\", \"$1:9100\", \"internal_ip\", \"(.*)\"))"
+        queryAggregation: mean
+        repetitionAggregation: median
+        operator: gte
+        threshold: 0
+        warmup: 300 # in seconds
+        promQLStepSeconds: 1 # <--
+        takeOnlyFirstMetric: "false" # <--

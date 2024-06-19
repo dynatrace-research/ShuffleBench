@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: flink-taskmanager
 spec:
-  replicas: 9
+  replicas: 20
   selector:
     matchLabels:
       app: flink
@@ -15,14 +15,23 @@ spec:
         component: taskmanager
     spec:
       terminationGracePeriodSeconds: 0
+      securityContext:
+        fsGroup: 9999
+        runAsUser: 9999
+        runAsGroup: 9999
       containers:
         - name: taskmanager
-          image: shufflebench/shuffle-flink:latest # Adjust image to yours
+          #image: ghcr.io/dynatrace-research/shufflebench/shuffle-flink:latest  THIS IMAGE DOES NOT WORK FOR FAULT TOLERANCE IN FLINK. IT IS NECESSARY TO BUILD A NEW IMAGE WITH THE CHANGES IN FLINK'S CODE (SEE SHUFFLE-FLINK MODULE).
+          imagePullPolicy: Always
           resources:
+            requests:
+              memory: 2Gi
+              cpu: 1000m #
             limits:
-              memory: 4Gi
+              memory: 3Gi
               cpu: 1000m
-          args: ["taskmanager"]
+          #args: ["taskmanager"]
+          args: ["taskmanager","-c", "chown 1000:1000 /mnt/flink/checkpoints-data && chmod 700 /mnt/flink/checkpoints-data"] #proper permissions
           ports:
             - containerPort: 6122
               name: rpc
@@ -37,9 +46,13 @@ spec:
             periodSeconds: 60
           volumeMounts:
             - name: flink-config-volume
-              mountPath: /opt/flink/conf/
+              mountPath: /opt/flink/conf
+            - name: persistent-storage
+              mountPath: /mnt/flink/checkpoints-data #directory for saving the checkpoints
           securityContext:
             runAsUser: 9999  # refers to user _flink_ from official flink image, change if necessary
+      nodeSelector:
+        type: workers
       volumes:
         - name: flink-config-volume
           configMap:
@@ -49,5 +62,6 @@ spec:
                 path: flink-conf.yaml
               - key: log4j-console.properties
                 path: log4j-console.properties
-      nodeSelector:
-        type: sut
+        - name: persistent-storage
+          persistentVolumeClaim:
+            claimName: efs-claim #change accordingly to your volume and filesystem. EFS was used to provide the storage infrastructure following all the steps from <https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html>

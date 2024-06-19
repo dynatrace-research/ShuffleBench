@@ -6,7 +6,7 @@ spec:
   selector:
     matchLabels:
       app: shuffle-kstreams
-  replicas: 9
+  replicas: 8
   template:
     metadata:
       labels:
@@ -15,7 +15,9 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
         - name: shuffle-kstreams
-          image: shufflebench/shuffle-kstreams:latest # Adjust image to yours
+          image: ghcr.io/dynatrace-research/shufflebench/shuffle-kstreams:latest
+          #image: 778851315920.dkr.ecr.eu-central-1.amazonaws.com/spark-eks/shuffle-kstreams:shuffle-kstreams-consumer-partition-strategy-round-robin
+          imagePullPolicy: Always
           ports:
             - containerPort: 5555
               name: jmx
@@ -28,8 +30,10 @@ spec:
               value: "0.2"
             - name: MATCHER_ZIPF_S
               value: "0.0"
+            - name: CONSUMER_INIT_COUNT_RANDOM
+              value: "false"
             - name: "KAFKASTREAMS__COMMIT_INTERVAL_MS__"
-              value: "5000"
+              value: "2000"
             # - name: "KAFKASTREAMS__MAX_POLL_RECORDS__"
             #   value: "500"
             # - name: "KAFKASTREAMS__LINGER_MS__"
@@ -39,29 +43,30 @@ spec:
             - name: JAVA_TOOL_OPTIONS
               value: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=5555"
           resources:
+            requests:
+              memory: 2Gi
+              cpu: 1000m #
             limits:
-              memory: 4Gi
+              memory: 3Gi
               cpu: 1000m
-        - name: prometheus-jmx-exporter
-          image: "solsson/kafka-prometheus-jmx-exporter@sha256:6f82e2b0464f50da8104acd7363fb9b995001ddff77d248379f8788e78946143"
-          command:
-            - java
-            - -XX:+UnlockExperimentalVMOptions
-            - -XX:+UseCGroupMemoryLimitForHeap
-            - -XX:MaxRAMFraction=1
-            - -XshowSettings:vm
-            - -jar
-            - jmx_prometheus_httpserver.jar
-            - "5556"
-            - /etc/jmx-aggregation/jmx-kafka-prometheus.yml
-          ports:
-            - containerPort: 5556
-          volumeMounts:
-            - name: jmx-config
-              mountPath: /etc/jmx-aggregation
+#        - name: prometheus-jmx-exporter
+#          image: "solsson/kafka-prometheus-jmx-exporter@sha256:6f82e2b0464f50da8104acd7363fb9b995001ddff77d248379f8788e78946143"
+#          command:
+#            - java
+#            - -XX:+UnlockExperimentalVMOptions
+#            - -XX:+UseCGroupMemoryLimitForHeap
+#            - -XX:MaxRAMFraction=1
+#            - -XshowSettings:vm
+#            - -jar
+#            - jmx_prometheus_httpserver.jar
+#            - "5556"
+#            - /etc/jmx-aggregation/jmx-kafka-prometheus.yml
+#          ports:
+#            - containerPort: 5556
+#          volumeMounts:
+#            - name: jmx-config
+#              mountPath: /etc/jmx-aggregation
       volumes:
         - name: jmx-config
           configMap:
             name: shuffle-kstreams-jmx-configmap
-      nodeSelector:
-        type: sut

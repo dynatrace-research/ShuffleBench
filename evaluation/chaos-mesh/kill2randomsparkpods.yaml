@@ -1,0 +1,21 @@
+kind: Schedule
+apiVersion: chaos-mesh.org/v1alpha1
+metadata:
+  namespace: default
+  name: killrandomsparkpod
+spec:
+  schedule: '*/5 * * * *'
+  startingDeadlineSeconds: null
+  concurrencyPolicy: Forbid
+  historyLimit: 1
+  type: PodChaos
+  podChaos:
+    selector:
+      namespaces:
+        - default
+      labelSelectors:
+        component: spark-worker
+    mode: fixed
+    value: '2'
+    action: pod-kill
+

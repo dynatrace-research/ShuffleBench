@@ -1,0 +1,41 @@
+###
+# Prometheus Monitoring Stack (Prometheus Operator)
+###
+kube-prometheus-stack:
+  global:
+    rbac:
+      create: true # enable for full-stack monitoring
+  
+  grafana:
+    defaultDashboardsEnabled: true
+
+  kubelet:
+    enabled: true
+  
+  kubeDns:
+    enabled: true
+   
+  kubeStateMetrics:
+    enabled: true
+  
+  nodeExporter:
+    enabled: true
+  
+  prometheus:
+    enabled: true # Use built-in Prometheus
+  prometheusSpec:
+    scrape_interval: "1s"
+    evaluation_interval: "5s"
+
+prometheus: 
+  enabled: false # Use built-in Prometheus
+
+
+##Adding this bellow, can be removed
+strimzi:
+  kafka:
+    replicas: 2
+    config:
+      "offsets.topic.replication.factor": "1"
+  zookeeper:
+    replicas: 1

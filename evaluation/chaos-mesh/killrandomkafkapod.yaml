@@ -1,0 +1,19 @@
+kind: Schedule
+apiVersion: chaos-mesh.org/v1alpha1
+metadata:
+  namespace: default
+  name: killrandomkafkapod
+spec:
+  schedule: '*/5 * * * *'
+  startingDeadlineSeconds: null
+  concurrencyPolicy: Forbid
+  historyLimit: 1
+  type: PodChaos
+  podChaos:
+    selector:
+      namespaces:
+        - default
+      labelSelectors:
+        app: shuffle-kstreams
+    mode: one
+    action: pod-kill

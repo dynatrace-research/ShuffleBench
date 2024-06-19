@@ -1,0 +1,12 @@
+dependencies:
+- name: grafana
+  repository: https://grafana.github.io/helm-charts
+  version: 6.17.10
+- name: kube-prometheus-stack
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 48.1.2
+- name: strimzi-kafka-operator
+  repository: https://strimzi.io/charts/
+  version: 0.36.1
+digest: sha256:a3ff3e6a780e012830704c8eb905ca74d3495b367f403f592aa3827b4ce8eda1
+generated: "2023-12-12T10:46:59.835558382+01:00"

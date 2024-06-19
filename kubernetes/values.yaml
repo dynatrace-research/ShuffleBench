@@ -9,7 +9,7 @@ kcat:
 
 strimzi:
   kafka:
-    replicas: 3
+    replicas: 2
     config:
       "auto.create.topics.enable": false
       "log.retention.ms": "7200000" # 2h
@@ -17,7 +17,7 @@ strimzi:
     jvmOptions: {}
     storage:
       type: persistent-claim
-      size: 500Gi
+      size: 1000Gi
       class: kafka
       deleteClaim: true
   zookeeper:
@@ -31,8 +31,10 @@ strimzi:
 kube-prometheus-stack:
   prometheus:
     prometheusSpec:
-      scrapeInterval: 5s
-
+      scrapeInterval: 1s
+  kube-state-metrics:
+    metricLabelsAllowlist:
+      - nodes=[type]
 operator:
   resultsVolume:
     persistent:

@@ -17,23 +17,26 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
         - name: jobmanager
-          image: shufflebench/shuffle-flink:latest # Adjust image to yours
+          #image: ghcr.io/dynatrace-research/shufflebench/shuffle-flink:latest  THIS IMAGE DOES NOT WORK FOR FAULT TOLERANCE IN FLINK. IT IS NECESSARY TO BUILD A NEW IMAGE WITH THE CHANGES IN FLINK'S CODE (SEE SHUFFLE-FLINK MODULE).
+          imagePullPolicy: Always
           env:
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: "theodolite-kafka-kafka-bootstrap:9092"
             - name: FLINK_PARALLELISM
-              value: "9"
+              value: "8"
             - name: MATCHER_ZIPF_NUM_RULES
-              value: "1000000"
+              value: "100000"
             - name: MATCHER_ZIPF_TOTAL_SELECTIVITY
               value: "0.2"
             - name: MATCHER_ZIPF_S
               value: "0.0"
+            - name: CONSUMER_INIT_COUNT_RANDOM
+              value: "true"
           resources:
             limits:
-              memory: 2Gi
-              cpu: 500m
-          args: ["standalone-job", "--job-classname", "com.dynatrace.research.shufflebench.FlinkShuffle"]
+              memory: 4Gi
+              cpu: 1000m
+          args: ["standalone-job", "--job-classname", "com.dynatrace.research.shufflebench.FlinkShuffle", "-c", "chown 1000:1000 /mnt/flink/checkpoints-data && chmod 700 /mnt/flink/checkpoints-data"] #the flink containers update to a more appropriate permission
           ports:
             - containerPort: 6123
               name: rpc
@@ -51,8 +54,21 @@ spec:
           volumeMounts:
             - name: flink-config-volume
               mountPath: /opt/flink/conf
+            - name: persistent-storage
+              mountPath: /mnt/flink/checkpoints-data #directory for saving the checkpoints
           securityContext:
             runAsUser: 9999  # refers to user _flink_ from official flink image, change if necessary
+      initContainers:
+        - name: set-folder-ownership
+          image: busybox:1.33.1  # You can use a minimal image like BusyBox for this task
+          command: [ "sh", "-c", "chmod 777 /mnt/flink/checkpoints-data" ] #first we set the max permission in the init container, so Flink has access. Then, the flink containers update to a more appropriate permission
+          securityContext:
+            runAsUser: 0  # Specify the user ID you want to use (0 for root)
+          volumeMounts:
+          - name: persistent-storage
+            mountPath: /mnt/flink/checkpoints-data  # Mount path inside the init container
+      nodeSelector:
+        type: manager
       volumes:
         - name: flink-config-volume
           configMap:
@@ -62,5 +78,6 @@ spec:
                 path: flink-conf.yaml
               - key: log4j-console.properties
                 path: log4j-console.properties
-      nodeSelector:
-        type: sut
+        - name: persistent-storage
+          persistentVolumeClaim:
+            claimName: efs-claim #change accordingly to your volume and filesystem. EFS was used to provide the storage infrastructure following all the steps from <https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html>

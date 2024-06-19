@@ -10,4 +10,4 @@ spec:
         app: shuffle-kstreams
   endpoints:
     - port: metrics
-      interval: 10s
+      interval: 30s

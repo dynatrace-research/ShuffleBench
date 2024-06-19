@@ -1,0 +1,5 @@
+plugins {
+  id 'theodolite.flink'
+}
+
+mainClassName = "rocks.theodolite.benchmarks.uc3.flink.HistoryServiceFlinkJob"

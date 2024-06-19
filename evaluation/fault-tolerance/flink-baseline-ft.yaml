@@ -1,0 +1,99 @@
+apiVersion: theodolite.rocks/v1beta1
+kind: execution
+metadata:
+  name: shufflebench-flink-ft
+spec:
+  benchmark: shuffle-flink
+  load:
+    loadType: "MessagesPerSecond"
+    loadValues: [100000]
+  resources:
+    resourceType: "Instances"
+    resourceValues: [8]
+  slos:
+    - name: input_throughput_2s
+      properties:
+        warmup: 300 # in seconds
+  execution:
+    metric: capacity
+    strategy:
+      name: "LinearSearch"
+    #duration: 120
+    duration: 3360 # kill starts at 8 and kills pods every 5 minutes (wait until 0 do start chaos) | pod crash every 10 mins 5 times starts at 3
+    loadGenerationDelay: 60 # in seconds
+    repetitions: 1
+  configOverrides:
+    - patcher:
+        type: "EnvVarPatcher"
+        resource: "jobmanager-deployment.yaml"
+        properties:
+          container: "jobmanager"
+          variableName: "MATCHER_ZIPF_NUM_RULES"
+      value: "20000"
+    - patcher:
+        type: "EnvVarPatcher"
+        resource: "jobmanager-deployment.yaml"
+        properties:
+          container: "jobmanager"
+          variableName: "MATCHER_ZIPF_TOTAL_SELECTIVITY"
+      value: "0.5"
+    - patcher:
+        type: "EnvVarPatcher"
+        resource: "jobmanager-deployment.yaml"
+        properties:
+          container: "jobmanager"
+          variableName: "CONSUMER_OUTPUT_RATE"
+      value: "1"
+    - patcher:
+        type: "EnvVarPatcher"
+        resource: "jobmanager-deployment.yaml"
+        properties:
+          container: "jobmanager"
+          variableName: "FLINK_DELIVERY_GUARANTEE"
+      value: "AT_LEAST_ONCE"
+    - patcher:
+        type: "EnvVarPatcher"
+        resource: "jobmanager-deployment.yaml"
+        properties:
+          container: "jobmanager"
+          variableName: "FLINK_CHECKPOINTING_ENABLE"
+      value: "true"
+    - patcher:
+        type: "EnvVarPatcher"
+        resource: "jobmanager-deployment.yaml"
+        properties:
+          container: "jobmanager"
+          variableName: "FLINK_CHECKPOINTING_DIRECTORY"
+      value: "file:///mnt/flink/checkpoints-data"
+    - patcher:
+        type: "EnvVarPatcher"
+        resource: "jobmanager-deployment.yaml"
+        properties:
+          container: "jobmanager"
+          variableName: "FLINK_CHECKPOINTING_INTERVAL_MS"
+      value: "2000"
+
+    - patcher:
+        type: "NodeSelectorPatcher"
+        resource: "jobmanager-deployment.yaml"
+        properties:
+          variableName: "type"
+      value: "manager"
+    - patcher:
+        type: "NodeSelectorPatcher"
+        resource: "taskmanager-deployment.yaml"
+        properties:
+          variableName: "type"
+      value: "workers"
+    - patcher:
+        type: "NodeSelectorPatcher"
+        resource: "shuffle-load-generator-deployment.yaml"
+        properties:
+          variableName: "type"
+      value: "infra"
+    - patcher:
+        type: "NodeSelectorPatcher"
+        resource: "shuffle-latency-exporter-deployment.yaml"
+        properties:
+          variableName: "type"
+      value: "infra"

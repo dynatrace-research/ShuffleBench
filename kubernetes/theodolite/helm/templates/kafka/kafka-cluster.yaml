@@ -1,0 +1,80 @@
+{{- if .Values.strimzi.enabled -}}
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: {{ template "theodolite.fullname" . }}-kafka
+spec:
+  kafka:
+    jmxOptions: {}
+    {{- with .Values.strimzi.kafka.listeners }}
+    listeners:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.strimzi.kafka.replicas }}
+    replicas:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.strimzi.kafka.config }}
+    config:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.strimzi.kafka.jvmOptions }}
+    jvmOptions:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.strimzi.kafka.storage }}
+    storage:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    metricsConfig:
+      type: jmxPrometheusExporter
+      valueFrom:
+        configMapKeyRef:
+          name: {{ template "theodolite.fullname" . }}-kafka-metrics
+          key: kafka-metrics-config.yml
+    {{- with .Values.strimzi.kafka.template}}
+    template:
+      {{- toYaml . | nindent 6 }}
+    {{- end}}
+    {{- with .Values.strimzi.kafka.resources}}
+    resources:
+      {{- toYaml . | nindent 6 }}
+    {{- end}}
+
+
+  zookeeper:
+    {{- with .Values.strimzi.zookeeper.replicas }}
+    replicas:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    storage:
+      type: ephemeral
+    {{- with .Values.strimzi.zookeeper.template}}
+    template:
+      {{- toYaml . | nindent 6 }}
+    {{- end}}
+
+  {{- if .Values.strimzi.kafkaExporter.enabled }}
+  kafkaExporter:
+    {{- with .Values.strimzi.kafkaExporter.template}}
+    template:
+      {{- toYaml . | nindent 6 }}
+    {{- end}}
+    {{- with .Values.strimzi.kafkaExporter.resources}}
+    resources:
+      {{- toYaml . | nindent 6 }}
+    {{- end}}
+    logging: info
+  {{- end }}
+
+  {{- if .Values.strimzi.topicOperator.enabled }}
+  entityOperator:
+    topicOperator: {}
+    {{- with .Values.strimzi.topicOperator.template}}
+    template:
+      {{- toYaml . | nindent 6 }}
+    {{- end}}
+  {{- end }}
+
+
+{{- end }}

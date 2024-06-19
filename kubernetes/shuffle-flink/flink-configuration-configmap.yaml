@@ -12,8 +12,9 @@ data:
     jobmanager.rpc.port: 6123
     taskmanager.rpc.port: 6122
     queryable-state.proxy.ports: 6125
-    jobmanager.memory.process.size: 4Gb
-    taskmanager.memory.process.size: 4Gb
+    jobmanager.memory.process.size: 2Gb
+    taskmanager.memory.process.size: 2Gb
+    scheduler-mode: reactive #TODO: Check this
     #metrics.reporter.prom.class: org.apache.flink.metrics.prometheus.PrometheusReporter
     metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
     metrics.reporter.prom.interval: 10 SECONDS

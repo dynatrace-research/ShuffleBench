@@ -29,10 +29,11 @@ public class SparkStructuredStreamingShuffle {
     public static void main(String[] args) throws StreamingQueryException, TimeoutException {
 
         SparkSession spark = SparkSession.builder()
+                //.config("spark.master", "local[8]")
                 .appName(APPLICATION_ID)
                 .config(Kryo.KRYO_REGISTRATION_REQUIRED().key(), true)
                 .config(Kryo.KRYO_USER_REGISTRATORS().key(), CustomKryoRegistrator.class.getName())
-                .config("spark.sql.streaming.stateStore.providerClass", "org.apache.spark.sql.execution.streaming.state.RocksDBStateStoreProvider")
+                //.config("spark.sql.streaming.stateStore.providerClass", "org.apache.spark.sql.execution.streaming.state.RocksDBStateStoreProvider")
                 .getOrCreate();
 
         final Config config = ConfigProvider.getConfig();
@@ -41,6 +42,10 @@ public class SparkStructuredStreamingShuffle {
         final String kafkaBootstrapServers = config.getValue("kafka.bootstrap.servers", String.class);
         final String kafkaInputTopic = config.getValue("kafka.topic.input", String.class);
         final String kafkaOutputTopic = config.getValue("kafka.topic.output", String.class);
+
+        spark.sparkContext().setLogLevel("ERROR"); //modified
+
+        spark.conf().set("spark.streaming.receiver.writeAheadLog.enable", "true");
 
         Optional<Integer> maxOffsetsPerTrigger = config.getOptionalValue("spark.max.offsets.per.trigger", Integer.class);
         DataStreamReader kafkaReader = spark.readStream()
@@ -121,7 +126,7 @@ public class SparkStructuredStreamingShuffle {
                 .groupByKey((MapFunction<Tuple2<String, TimestampedRecord>, String>) value -> value._1, Encoders.STRING())
                 .flatMapGroupsWithState(
                         updateState,
-                        OutputMode.Update(),
+                        OutputMode.Append(), //Should be the Append as it is the default on Spark structured streaming. check the application output
                         Encoders.kryo(State.class),
                         Encoders.tuple(Encoders.STRING(), Encoders.kryo(ConsumerEvent.class)),
                         GroupStateTimeout.NoTimeout())
@@ -132,7 +137,7 @@ public class SparkStructuredStreamingShuffle {
         StreamingQuery query =  statefulAggregation
                 .toDF("key", "value")
                 .writeStream()
-                .outputMode(OutputMode.Update())
+                //.outputMode(OutputMode.Update())
                 .format("kafka")
                 .option("kafka.bootstrap.servers", kafkaBootstrapServers)
                 .option("topic", kafkaOutputTopic)
