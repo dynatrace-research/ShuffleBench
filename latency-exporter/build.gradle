@@ -24,7 +24,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'io.micrometer:micrometer-registry-prometheus:latest.release'
+    implementation 'io.micrometer:micrometer-registry-prometheus:1.13.0'
+    implementation 'io.micrometer:micrometer-registry-prometheus-simpleclient:1.13.0'
     // implementation 'io.micrometer:micrometer-registry-dynatrace:latest.release'
     implementation 'org.apache.kafka:kafka-clients:3.5.0'
     implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
