@@ -16,15 +16,13 @@ public class KafkaLoadGenerator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KafkaLoadGenerator.class);
 
-  private static final long SEED = 0xd966c7902a8716f9L;
+  private final int executionTimeMs;
 
   private final String seedString;
 
   private final String kafkaBootstrapServers;
 
   private final String kafkaTopic;
-
-  private final int executionTimeMs;
 
   private final int numSources;
   private final int recordsPerSecondAndSource;
@@ -36,16 +34,23 @@ public class KafkaLoadGenerator {
   private final List<KafkaSender> openKafkaSenders = new ArrayList<>();
   private final List<RecordSource> openRecordSources = new ArrayList<>();
 
-  public KafkaLoadGenerator() {
-    final Config config = ConfigProvider.getConfig();
-    executionTimeMs = config.getValue("execution.time.ms", Integer.class);
-    seedString = config.getValue("seed.string", String.class);
-    kafkaBootstrapServers = config.getValue("kafka.bootstrap.servers", String.class);
-    kafkaTopic = config.getValue("kafka.topic", String.class);
-    numSources = config.getValue("num.sources", Integer.class);
-    recordsPerSecondAndSource = config.getValue("num.records.per.source.second", Integer.class);
-    recordSizeInBytes = config.getValue("record.size.bytes", Integer.class);
-    final int threadPoolSize = config.getValue("thread.pool.size", Integer.class);
+  public KafkaLoadGenerator(
+          int executionTimeMs,
+          String seedString,
+          String kafkaBootstrapServers,
+          String kafkaTopic,
+          int numSources,
+          int recordsPerSecondAndSource,
+          int recordSizeInBytes,
+          int threadPoolSize
+  ) {
+    this.executionTimeMs = executionTimeMs;
+    this.seedString = seedString;
+    this.kafkaBootstrapServers = kafkaBootstrapServers;
+    this.kafkaTopic = kafkaTopic;
+    this.numSources = numSources;
+    this.recordsPerSecondAndSource = recordsPerSecondAndSource;
+    this.recordSizeInBytes = recordSizeInBytes;
     this.executor = new ScheduledThreadPoolExecutor(threadPoolSize);
   }
 
@@ -80,7 +85,17 @@ public class KafkaLoadGenerator {
   }
 
   public static void main(String[] args) throws InterruptedException, IOException {
-    final KafkaLoadGenerator kafkaLoadGenerator = new KafkaLoadGenerator();
+    final Config config = ConfigProvider.getConfig();
+    final KafkaLoadGenerator kafkaLoadGenerator = new KafkaLoadGenerator(
+            config.getValue("execution.time.ms", Integer.class),
+            config.getValue("seed.string", String.class),
+            config.getValue("kafka.bootstrap.servers", String.class),
+            config.getValue("kafka.topic", String.class),
+            config.getValue("num.sources", Integer.class),
+            config.getValue("num.records.per.source.second", Integer.class),
+            config.getValue("record.size.bytes", Integer.class),
+            config.getValue("thread.pool.size", Integer.class)
+    );
     Runtime.getRuntime().addShutdownHook(new Thread(() -> {
       LOGGER.info("Shut down load generator.");
       try {
