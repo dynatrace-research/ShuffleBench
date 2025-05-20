@@ -16,8 +16,8 @@ java {
     withSourcesJar()
 }
 
-group 'com.dynatrace'
-version '1.0-SNAPSHOT'
+group = 'com.dynatrace'
+version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
