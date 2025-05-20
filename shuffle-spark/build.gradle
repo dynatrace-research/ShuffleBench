@@ -13,8 +13,8 @@ java {
     withSourcesJar()
 }
 
-group 'com.dynatrace'
-version '1.0-SNAPSHOT'
+group = 'com.dynatrace'
+version = '1.0-SNAPSHOT'
 
 application {
     mainClassName = "com.dynatrace.research.shufflebench.SparkStructuredStreamingShuffle"
@@ -73,8 +73,6 @@ test {
     useJUnitPlatform()
 }
 shadowJar {
-    classifier = null
-    version = version
     zip64 = true
     mergeServiceFiles()
 

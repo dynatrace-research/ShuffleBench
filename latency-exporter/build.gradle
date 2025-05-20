@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClassName = "com.dynatrace.research.shufflebench.LatencyExporter"
+    mainClass = "com.dynatrace.research.shufflebench.LatencyExporter"
 }
 
 java {
@@ -16,8 +16,8 @@ java {
     withSourcesJar()
 }
 
-group 'com.dynatrace'
-version '1.0-SNAPSHOT'
+group = 'com.dynatrace'
+version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()

@@ -20,8 +20,8 @@ java {
     withSourcesJar()
 }
 
-group 'com.dynatrace'
-version '1.0-SNAPSHOT'
+group = 'com.dynatrace'
+version = '1.0-SNAPSHOT'
 
 ext {
     flinkVersion = '1.17.0'
