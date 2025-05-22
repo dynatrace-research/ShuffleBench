@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class KafkaLoadGenerator {
 
@@ -27,6 +29,9 @@ public class KafkaLoadGenerator {
   private final String kafkaTopic;
 
   private final int numSources;
+
+  private final boolean shareKafkaSender;
+
   private final int recordsPerSecondAndSource;
 
   private final int recordSizeInBytes;
@@ -46,6 +51,7 @@ public class KafkaLoadGenerator {
           String kafkaBootstrapServers,
           String kafkaTopic,
           int numSources,
+          boolean shareKafkaSender,
           int recordsPerSecondAndSource,
           int recordSizeInBytes,
           int threadPoolSize,
@@ -56,6 +62,7 @@ public class KafkaLoadGenerator {
             kafkaBootstrapServers,
             kafkaTopic,
             numSources,
+            shareKafkaSender,
             recordsPerSecondAndSource,
             recordSizeInBytes,
             threadPoolSize,
@@ -68,6 +75,7 @@ public class KafkaLoadGenerator {
           String kafkaBootstrapServers,
           String kafkaTopic,
           int numSources,
+          boolean shareKafkaSender,
           int recordsPerSecondAndSource,
           int recordSizeInBytes,
           int threadPoolSize,
@@ -78,6 +86,7 @@ public class KafkaLoadGenerator {
     this.kafkaBootstrapServers = kafkaBootstrapServers;
     this.kafkaTopic = kafkaTopic;
     this.numSources = numSources;
+    this.shareKafkaSender = shareKafkaSender;
     this.recordsPerSecondAndSource = recordsPerSecondAndSource;
     this.recordSizeInBytes = recordSizeInBytes;
     this.executor = new ScheduledThreadPoolExecutor(threadPoolSize);
@@ -86,19 +95,21 @@ public class KafkaLoadGenerator {
   }
 
   public void startAsync() {
-    final KafkaSender kafkaSender = new KafkaSender(this.kafkaBootstrapServers, this.kafkaTopic, this.kafkaProducerConfig, this.callback);
+    final List<KafkaSender> kafkaSenders = IntStream.range(0, this.shareKafkaSender ? 1 : numSources)
+            .mapToObj(i -> new KafkaSender(this.kafkaBootstrapServers, this.kafkaTopic, this.kafkaProducerConfig, this.callback))
+            .collect(Collectors.toList());
     for (int sourceId = 0; sourceId < numSources; sourceId++) {
       final long seed = Hashing.komihash4_3().hashStream().putString(seedString).putInt(sourceId).getAsLong();
       final RecordSource recordSource = new RecordSource(
               executor,
               this.recordsPerSecondAndSource,
-              kafkaSender,
+              this.shareKafkaSender ? kafkaSenders.get(0) : kafkaSenders.get(sourceId),
               // new StaticRecordGenerator(),
               new RandomRecordGenerator(seed, recordSizeInBytes),
               "source" + sourceId);
       openRecordSources.add(recordSource);
     }
-    openKafkaSenders.add(kafkaSender);
+    openKafkaSenders.addAll(kafkaSenders);
   }
 
   public void startBlocking(int executionTimeMs) throws InterruptedException {
@@ -130,6 +141,7 @@ public class KafkaLoadGenerator {
             config.getValue("kafka.bootstrap.servers", String.class),
             config.getValue("kafka.topic", String.class),
             config.getValue("num.sources", Integer.class),
+            config.getValue("share.kafka.producer.among.sources", Boolean.class),
             config.getValue("num.records.per.source.second", Integer.class),
             config.getValue("record.size.bytes", Integer.class),
             config.getValue("thread.pool.size", Integer.class),
