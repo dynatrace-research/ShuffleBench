@@ -89,7 +89,7 @@ public class KafkaStreamsShuffle {
     this.kafkaStreamsApp.close();
   }
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) {
     KafkaStreamsShuffle kafkaStreamsShuffle = new KafkaStreamsShuffle();
     kafkaStreamsShuffle.start();
   }

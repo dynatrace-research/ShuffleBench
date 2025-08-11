@@ -24,7 +24,7 @@ public class AggregateFunction
     }
 
     @Override
-    public void open(Configuration parameters) throws Exception {
+    public void open(Configuration parameters) {
         state = super.getRuntimeContext().getState(new ValueStateDescriptor<>("state", State.class));
     }
 
@@ -44,7 +44,7 @@ public class AggregateFunction
     public void onTimer(
             long timestamp,
             OnTimerContext ctx,
-            Collector<Tuple2<String, ConsumerEvent>> out) throws Exception {
+            Collector<Tuple2<String, ConsumerEvent>> out) {
         // nothing to do per default
     }
 }
