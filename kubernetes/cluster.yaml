@@ -37,3 +37,8 @@ nodeGroups:
 
 addons:
   - name: aws-ebs-csi-driver
+    configurationValues: |-
+      defaultStorageClass:
+        enabled: true
+      node:
+        legacyXFS: true
