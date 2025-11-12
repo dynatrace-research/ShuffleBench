@@ -37,15 +37,7 @@ We use it currently for two reasons:
 * Setting up our benchmark infrastructure including Kafka, Prometheus and Prometheus-related monitoring.
 * Defining benchmarks for throughput, latency, and scalability experiments.
 
-Not all Theodolite features we need, are already released. While this will happen soon, we currently have to install Theodolite by first cloning its git repository:
-
-```sh
-git clone git@github.com:cau-se/theodolite.git
-helm dependencies update theodolite/helm
-helm install theodolite theodolite/helm -f https://raw.githubusercontent.com/cau-se/theodolite/main/helm/preconfigs/extended-metrics.yaml -f values.yaml -f values-nodegroups.yaml -f values-aws-kafka-storage.yaml
-```
-
-Once the required Theodolite version has been released (v0.10), we can install it with:
+We can install Theodolite with:
 
 ```sh
 helm repo add theodolite https://www.theodolite.rocks
