@@ -45,7 +45,7 @@ spec:
               memory: 4Gi
               cpu: 1000m
         - name: prometheus-jmx-exporter
-          image: "bitnami/jmx-exporter:0.20.0"
+          image: "bitnamilegacy/jmx-exporter:0.20.0"
           args:
             - "5556"
             - "/etc/jmx-aggregation/jmx-kafka-prometheus.yml"
