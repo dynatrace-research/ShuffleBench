@@ -26,8 +26,19 @@ jobs:
       uses: gradle/gradle-build-action@v2
     - name: Execute Gradle build
       run: ./gradlew build
+    - name: Determine image tag
+      id: image-tag
+      run: |
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          echo "tag=latest" >> $GITHUB_OUTPUT
+        else
+          BRANCH_NAME=$(echo "${{ github.ref }}" | sed 's/refs\/heads\///')
+          echo "tag=$BRANCH_NAME" >> $GITHUB_OUTPUT
+        fi
     - name: Execute Gradle jib
+      if: github.event_name == 'push'
       env:
         ORG_GRADLE_PROJECT_imageUsername: ${{ github.actor }}
         ORG_GRADLE_PROJECT_imagePassword: ${{ secrets.GITHUB_TOKEN }}
+        ORG_GRADLE_PROJECT_imageTag: ${{ steps.image-tag.outputs.tag }}
       run: ./gradlew jib
