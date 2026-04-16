@@ -27,6 +27,7 @@ jobs:
     - name: Execute Gradle build
       run: ./gradlew build
     - name: Execute Gradle jib
+      if: github.event_name == 'push'
       env:
         ORG_GRADLE_PROJECT_imageUsername: ${{ github.actor }}
         ORG_GRADLE_PROJECT_imagePassword: ${{ secrets.GITHUB_TOKEN }}
