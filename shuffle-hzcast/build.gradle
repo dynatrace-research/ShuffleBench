@@ -5,12 +5,12 @@ plugins {
 }
 
 application {
-    mainClassName = "com.dynatrace.research.shufflebench.HazelcastShuffle"
+    mainClass = "com.dynatrace.research.shufflebench.HazelcastShuffle"
 }
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
     withJavadocJar()
     withSourcesJar()
@@ -25,8 +25,8 @@ repositories {
 
 dependencies {
     implementation project(':commons')
-    implementation 'com.hazelcast:hazelcast:5.3.1'
-    implementation 'com.hazelcast.jet:hazelcast-jet-kafka:5.3.1'
+    implementation 'com.hazelcast:hazelcast:5.5.0'
+    implementation 'com.hazelcast.jet:hazelcast-jet-kafka:5.5.0'
     implementation 'com.hazelcast:hazelcast-kubernetes:2.2.3'
     implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
     implementation 'org.apache.logging.log4j:log4j-core:2.19.0'

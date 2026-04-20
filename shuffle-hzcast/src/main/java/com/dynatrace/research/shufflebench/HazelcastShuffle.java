@@ -7,6 +7,7 @@ import com.dynatrace.research.shufflebench.consumer.StatefulConsumer;
 import com.dynatrace.research.shufflebench.matcher.MatcherService;
 import com.dynatrace.research.shufflebench.matcher.SimpleMatcherService;
 import com.dynatrace.research.shufflebench.record.*;
+import com.dynatrace.research.shufflebench.record.Record;
 import com.hazelcast.config.JoinConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
