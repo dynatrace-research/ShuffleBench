@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClassName = "com.dynatrace.research.shufflebench.KafkaStreamsShuffle"
+    mainClass = "com.dynatrace.research.shufflebench.KafkaStreamsShuffle"
 }
 
 java {

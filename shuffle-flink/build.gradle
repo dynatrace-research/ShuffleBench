@@ -9,7 +9,7 @@ plugins {
 }
 
 application {
-    mainClassName = "com.dynatrace.research.shufflebench.FlinkShuffle"
+    mainClass = "com.dynatrace.research.shufflebench.FlinkShuffle"
 }
 
 java {

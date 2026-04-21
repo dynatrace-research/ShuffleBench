@@ -17,7 +17,7 @@ group = 'com.dynatrace'
 version = '1.0-SNAPSHOT'
 
 application {
-    mainClassName = "com.dynatrace.research.shufflebench.SparkStructuredStreamingShuffle"
+    mainClass = "com.dynatrace.research.shufflebench.SparkStructuredStreamingShuffle"
 }
 
 ext {
