@@ -141,3 +141,7 @@ jib {
 tasks.jib.dependsOn tasks.shadowJar
 tasks.jibDockerBuild.dependsOn tasks.shadowJar
 tasks.jibBuildTar.dependsOn tasks.shadowJar
+tasks.distZip.dependsOn tasks.shadowJar
+tasks.distTar.dependsOn tasks.shadowJar
+tasks.startScripts.dependsOn tasks.shadowJar
+tasks.startShadowScripts.dependsOn tasks.jar
