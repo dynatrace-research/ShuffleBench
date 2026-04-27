@@ -5,6 +5,7 @@ import com.dynatrace.research.shufflebench.matcher.MatcherService;
 import com.dynatrace.research.shufflebench.matcher.SerializableMatcherService;
 import com.dynatrace.research.shufflebench.matcher.SimpleMatcherService;
 import com.dynatrace.research.shufflebench.record.*;
+import com.dynatrace.research.shufflebench.record.Record;
 import io.smallrye.config.SmallRyeConfig;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.typeinfo.TypeHint;
@@ -27,6 +28,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Flink implementation of the ShuffleBench stream-processing pipeline.
+ */
 public class FlinkShuffle {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FlinkShuffle.class);
@@ -35,6 +39,9 @@ public class FlinkShuffle {
 
   private final StreamExecutionEnvironment env;
 
+  /**
+   * Creates and configures the Flink job from the benchmark configuration.
+   */
   public FlinkShuffle() {
     final Config config = ConfigProvider.getConfig();
 
@@ -76,17 +83,22 @@ public class FlinkShuffle {
 
     this.env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-    this.env.getConfig().registerTypeWithKryoSerializer(Record.class, new RecordKyroSerializer());
-    this.env.getConfig().registerTypeWithKryoSerializer(TimestampedRecord.class, new  TimestampedRecordKyroSerializer());
-    this.env.getConfig().registerTypeWithKryoSerializer(State.class, new StateKyroSerializer());
-    //this.env.getConfig().addDefaultKryoSerializer(Record.class, new RecordKyroSerializer());
-    this.env.getConfig().getRegisteredTypesWithKryoSerializers().forEach(
-            (type, serializer) -> LOGGER.info("Registered Kryo serializer for type '{}'.", type)
-    );
-    //this.env.getConfig().disableGenericTypes();
-    this.env.getConfig().disableAutoTypeRegistration();
-    this.env.getConfig().enableForceKryo();
+//    this.env.getConfig().registerTypeWithKryoSerializer(Record.class, new RecordKyroSerializer());
+//    this.env.getConfig().registerTypeWithKryoSerializer(TimestampedRecord.class, new  TimestampedRecordKyroSerializer());
+//    this.env.getConfig().registerTypeWithKryoSerializer(State.class, new StateKyroSerializer());
+//    //this.env.getConfig().addDefaultKryoSerializer(Record.class, new RecordKyroSerializer());
+//    this.env.getConfig().getRegisteredTypesWithKryoSerializers().forEach(
+//            (type, serializer) -> LOGGER.info("Registered Kryo serializer for type '{}'.", type)
+//    );
+//    //this.env.getConfig().disableGenericTypes();
+//    this.env.getConfig().disableAutoTypeRegistration();
+//    this.env.getConfig().enableForceKryo();
+//    this.env.getConfig().enableObjectReuse();
+
+    // Flink 2.x removed several legacy ExecutionConfig Kryo registration APIs.
+    // Keep object reuse enabled; revisit serializer tuning via Flink 2.x serialization config.
     this.env.getConfig().enableObjectReuse();
+
     this.env.setParallelism(parallelism);
     if (checkpointingEnabled) {
       // CheckpointingMode.EXACTLY_ONCE is the default
@@ -103,12 +115,8 @@ public class FlinkShuffle {
         .build();
 
     KafkaSinkBuilder<Tuple2<String, ConsumerEvent>> sinkBuilder = KafkaSink.<Tuple2<String,ConsumerEvent>>builder()
-        .setBootstrapServers(kafkaBootstrapServers)
-        .setRecordSerializer(KafkaRecordSerializationSchema.<Tuple2<String,ConsumerEvent>>builder()
-            .setTopic(kafkaOutputTopic)
-            .setKafkaKeySerializer(Tuple2StringKeyKafkaSerializer.class)
-            .setKafkaValueSerializer(Tuple2ConsumerEventValueKafkaSerializer.class)
-            .build());
+          .setBootstrapServers(kafkaBootstrapServers)
+          .setRecordSerializer(new ConsumerEventKafkaRecordSerializationSchema(kafkaOutputTopic));
     KafkaSink<Tuple2<String,ConsumerEvent>> sink;
     if (deliveryGuarantee.isPresent()) {
       sink = sinkBuilder
@@ -133,6 +141,9 @@ public class FlinkShuffle {
         .sinkTo(sink);
   }
 
+  /**
+   * Starts the configured Flink job.
+   */
   public void start() {
     try {
       this.env.execute();
@@ -141,6 +152,9 @@ public class FlinkShuffle {
     }
   }
 
+  /**
+   * Stops the Flink execution environment.
+   */
   public void stop() {
     try {
       this.env.close();
@@ -149,6 +163,11 @@ public class FlinkShuffle {
     }
   }
 
+  /**
+   * Application entry point.
+   *
+   * @param args command-line arguments, currently unused
+   */
   public static void main(String[] args) {
     FlinkShuffle flinkShuffle = new FlinkShuffle();
     flinkShuffle.start();

@@ -7,9 +7,18 @@ import com.esotericsoftware.kryo.io.Output;
 
 import java.io.Serializable;
 
+/**
+ * Kryo serializer for {@link TimestampedRecord} values.
+ */
 public class TimestampedRecordKyroSerializer extends Serializer<TimestampedRecord> implements Serializable {
 
   private static final long serialVersionUID = 728071037176839227L;
+
+  /**
+   * Creates a timestamped-record Kryo serializer.
+   */
+  public TimestampedRecordKyroSerializer() {
+  }
 
   @Override
   public void write(Kryo kryo, Output output, TimestampedRecord record) {
@@ -20,7 +29,7 @@ public class TimestampedRecordKyroSerializer extends Serializer<TimestampedRecor
   }
 
   @Override
-  public TimestampedRecord read(Kryo kryo, Input input, Class<TimestampedRecord> type) {
+  public TimestampedRecord read(Kryo kryo, Input input, Class<? extends TimestampedRecord> type) {
     final long timestamp = input.readLong();
     final int length = input.readInt();
     final byte[] data = input.readBytes(length);

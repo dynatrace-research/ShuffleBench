@@ -3,18 +3,18 @@
 
 plugins {
     id 'java'
-    id "application"
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
-    id 'com.google.cloud.tools.jib' version '3.3.1'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'com.google.cloud.tools.jib' version '3.4.5'
 }
 
 application {
-    mainClass = "com.dynatrace.research.shufflebench.FlinkShuffle"
+    mainClass = 'com.dynatrace.research.shufflebench.FlinkShuffle'
 }
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
     withJavadocJar()
     withSourcesJar()
@@ -24,7 +24,11 @@ group = 'com.dynatrace'
 version = '1.0-SNAPSHOT'
 
 ext {
-    flinkVersion = '1.17.0'
+    flinkVersion = '2.0.0'
+    flinkKafkaConnectorVersion = '4.0.1-2.0'
+    log4jVersion = '2.24.3'
+    smallryeConfigVersion = '3.2.1'
+    hash4jVersion = '0.11.0'
 }
 
 repositories {
@@ -34,7 +38,7 @@ repositories {
 // NOTE: We cannot use "compileOnly" or "shadow" configurations since then we could not run code
 // in the IDE or with "gradle run". We also cannot exclude transitive dependencies from the
 // shadowJar yet (see https://github.com/johnrengelman/shadow/issues/159).
-// -> Explicitly define the // libraries we want to be included in the "flinkShadowJar" configuration!
+// -> Explicitly define the libraries we want to be included in the "flinkShadowJar" configuration!
 configurations {
     flinkShadowJar // dependencies which go into the shadowJar
     // always exclude these (also from transitive dependencies) since they are provided by Flink
@@ -43,6 +47,7 @@ configurations {
     flinkShadowJar.exclude group: 'org.slf4j'
     flinkShadowJar.exclude group: 'org.apache.logging.log4j'
 }
+
 dependencies {
     // Compile-time dependencies that should NOT be part of the
     // shadow (uber) jar and are provided in the lib folder of Flink
@@ -50,20 +55,19 @@ dependencies {
     implementation "org.apache.flink:flink-clients:${flinkVersion}"
     // Dependencies that should be part of the shadow jar, e.g.
     // connectors. These must be in the flinkShadowJar configuration!
-    flinkShadowJar "org.apache.flink:flink-connector-kafka:${flinkVersion}"
-    // flinkShadowJar "org.apache.flink:flink-statebackend-rocksdb:${flinkVersion}"
-    // flinkShadowJar "org.apache.flink:flink-metrics-prometheus:${flinkVersion}"
-    // flinkShadowJar "org.apache.flink:flink-runtime-web:${flinkVersion}" // For debugging
-    runtimeOnly 'org.apache.logging.log4j:log4j-api:2.19.0'
-    runtimeOnly 'org.apache.logging.log4j:log4j-core:2.19.0'
-    runtimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.19.0'
+    flinkShadowJar "org.apache.flink:flink-connector-kafka:${flinkKafkaConnectorVersion}"
+    flinkShadowJar "org.apache.flink:flink-connector-base:${flinkVersion}"
+    runtimeOnly "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+    runtimeOnly "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    runtimeOnly "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
     flinkShadowJar project(':commons')
-    flinkShadowJar 'io.smallrye.config:smallrye-config:3.2.1'
-    flinkShadowJar 'com.dynatrace.hash4j:hash4j:0.9.0'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.9.1'
-    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.9.1'
-    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.23.1'
+    flinkShadowJar "io.smallrye.config:smallrye-config:${smallryeConfigVersion}"
+    flinkShadowJar "com.dynatrace.hash4j:hash4j:${hash4jVersion}"
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
+    testImplementation 'org.assertj:assertj-core:3.23.1'
 }
+
 // make compileOnly dependencies available for tests:
 sourceSets {
     main.compileClasspath += configurations.flinkShadowJar
@@ -84,15 +88,15 @@ shadowJar {
 
 jib {
     from {
-        image =  "flink:${flinkVersion}"
+        image = "flink:${flinkVersion}-java21"
         platforms {
             platform {
-                architecture = "amd64"
-                os = "linux"
+                architecture = 'amd64'
+                os = 'linux'
             }
             platform {
-                architecture = "arm64"
-                os = "linux"
+                architecture = 'arm64'
+                os = 'linux'
             }
         }
     }
@@ -116,3 +120,4 @@ jib {
         entrypoint = 'INHERIT'
     }
 }
+
