@@ -2,6 +2,25 @@
 
 . /common.sh
 
-echo "$(hostname -i) spark-master" >> /etc/hosts
+MASTER_HOST="${SPARK_MASTER_HOST:-0.0.0.0}"
+MASTER_PORT="${SPARK_MASTER_PORT:-7077}"
+WEBUI_PORT="${SPARK_MASTER_WEBUI_PORT:-8080}"
 
-/opt/spark/bin/spark-class org.apache.spark.deploy.master.Master --ip spark-master --port 7077 --webui-port 8080
+echo "Image build id: ${IMAGE_BUILD_ID:-unknown}"
+
+# Only add /etc/hosts entry when a non-wildcard host is provided
+if [ "${MASTER_HOST}" != "0.0.0.0" ]; then
+  echo "$(hostname -i) ${MASTER_HOST}" >> /etc/hosts
+fi
+
+echo "Hadoop version:"
+/opt/hadoop/bin/hadoop version | head -n 1
+
+echo "Spark version:"
+/opt/spark/bin/spark-submit --version | head -n 1
+
+/opt/spark/bin/spark-class org.apache.spark.deploy.master.Master \
+  --host "${MASTER_HOST}" \
+  --port "${MASTER_PORT}" \
+  --webui-port "${WEBUI_PORT}"
+

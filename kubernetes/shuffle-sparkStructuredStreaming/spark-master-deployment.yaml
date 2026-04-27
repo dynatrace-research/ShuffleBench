@@ -28,14 +28,24 @@ spec:
           env:
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: "theodolite-kafka-kafka-bootstrap:9092"
+            - name: KAFKA_TOPIC_INPUT
+              value: "input"
+            - name: KAFKA_TOPIC_OUTPUT
+              value: "output"
             - name: MATCHER_ZIPF_NUM_RULES
               value: "1000000"
             - name: MATCHER_ZIPF_TOTAL_SELECTIVITY
               value: "0.2"
             - name: MATCHER_ZIPF_S
               value: "0.0"
+            - name: CONSUMER_OUTPUT_RATE
+              value: "10"
+            - name: CONSUMER_STATE_SIZE_BYTES
+              value: "32"
             - name: CONSUMER_INIT_COUNT_RANDOM
               value: "true"
+            - name: CONSUMER_INIT_COUNT_SEED
+              value: "8902763414119392010"
             # - name: SPARK_MAX_OFFSETS_PER_TRIGGER
             #   value: "10000000"
             - name: SPARK_EXECUTOR_MEMORY
@@ -58,7 +68,9 @@ spec:
                 --conf spark.driver.bindAddress=$POD_IP \
                 --conf spark.executor.memory=$SPARK_EXECUTOR_MEMORY \
                 --conf spark.sql.shuffle.partitions=$SPARK_SQL_SHUFFLE_PARTITIONS \
-                /shuffle-spark-1.0-SNAPSHOT.jar
+                --conf "spark.driver.extraJavaOptions=--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.nio.cs=ALL-UNNAMED --add-opens=java.base/sun.security.action=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED" \
+                --conf "spark.executor.extraJavaOptions=--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.nio.cs=ALL-UNNAMED --add-opens=java.base/sun.security.action=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED" \
+                /shuffle-spark-1.0-SNAPSHOT-all.jar
           ports:
             - containerPort: 4040
           resources:

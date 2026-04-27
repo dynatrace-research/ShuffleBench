@@ -1,13 +1,22 @@
-// gradle shadowjar -Dorg.gradle.java.home=/usr/lib/jvm/java-17-openjdk-amd64
+// gradle shadowJar -Dorg.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64
+
+buildscript {
+    dependencies {
+        classpath 'org.ow2.asm:asm:9.7'
+        classpath 'org.ow2.asm:asm-commons:9.7'
+    }
+}
+
 plugins {
     id 'java'
-    id "application"
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'application'
+    id 'scala'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
     withJavadocJar()
     withSourcesJar()
@@ -17,11 +26,25 @@ group = 'com.dynatrace'
 version = '1.0-SNAPSHOT'
 
 application {
-    mainClass = "com.dynatrace.research.shufflebench.SparkStructuredStreamingShuffle"
+    mainClass = 'com.dynatrace.research.shufflebench.SparkStructuredStreamingShuffle'
+    applicationDefaultJvmArgs = [
+        '--add-opens=java.base/java.nio=ALL-UNNAMED',
+        '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang=ALL-UNNAMED',
+        '--add-opens=java.base/java.util=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED',
+        '--add-opens=java.base/java.io=ALL-UNNAMED'
+    ]
 }
 
 ext {
-    sparkVersion = '3.4.1'
+    sparkVersion = '4.1.1'
+    sparkKafkaClientsVersion = '3.9.1'
+    log4jVersion = '2.24.3'
+    smallryeConfigVersion = '3.2.1'
+    hash4jVersion = '0.11.0'
+    typesafeConfigVersion = '1.4.1'
+    jacksonDatabindVersion = '2.16.1'
 }
 
 repositories {
@@ -31,33 +54,32 @@ repositories {
 dependencies {
     implementation project(':commons')
 
-    // Spark dependencies
-    implementation "org.apache.spark:spark-core_2.12:${sparkVersion}"
-    implementation "org.apache.spark:spark-sql_2.12:${sparkVersion}"
-    implementation "org.apache.spark:spark-streaming_2.12:${sparkVersion}"
-    implementation "org.apache.spark:spark-sql-kafka-0-10_2.12:${sparkVersion}"
+    // Spark dependencies (Scala 2.13 build)
+    implementation "org.apache.spark:spark-core_2.13:${sparkVersion}"
+    implementation "org.apache.spark:spark-sql_2.13:${sparkVersion}"
+    implementation "org.apache.spark:spark-streaming_2.13:${sparkVersion}"
+    implementation "org.apache.spark:spark-sql-kafka-0-10_2.13:${sparkVersion}"
 
     // Kafka dependencies
-    implementation 'org.apache.kafka:kafka-clients:3.5.0'
+    implementation "org.apache.kafka:kafka-clients:${sparkKafkaClientsVersion}"
+
     // Other dependencies
-    implementation 'com.typesafe:config:1.4.1'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.3'
+    implementation "com.typesafe:config:${typesafeConfigVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
+    implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+    implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    implementation "org.apache.logging.log4j:log4j-slf4j2-impl:${log4jVersion}"
+    implementation "io.smallrye.config:smallrye-config:${smallryeConfigVersion}"
+    implementation "com.dynatrace.hash4j:hash4j:${hash4jVersion}"
 
-    implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
-    implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
-    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.19.0'
-    implementation 'io.smallrye.config:smallrye-config:3.2.1'
-    implementation 'com.dynatrace.hash4j:hash4j:0.9.0'
-
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.9.1'
-    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.9.1'
-    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.23.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
+    testImplementation 'org.assertj:assertj-core:3.23.1'
 }
-tasks.register("allJar", com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+
+tasks.register('allJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
     manifest {
-        attributes "Main-Class": "shadow_test.Main"
-        exclude 'META-INF/*.DSA'
-        exclude 'META-INF/*.SF'
+        attributes 'Main-Class': 'com.dynatrace.research.shufflebench.SparkStructuredStreamingShuffle'
     }
 
     from sourceSets.main.output
@@ -67,24 +89,33 @@ tasks.register("allJar", com.github.jengelman.gradle.plugins.shadow.tasks.Shadow
 
     mergeServiceFiles()
 
-    with jar
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+    exclude 'META-INF/*.SF'
 }
+
 test {
     useJUnitPlatform()
+    jvmArgs = [
+        '--add-opens=java.base/java.nio=ALL-UNNAMED',
+        '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang=ALL-UNNAMED',
+        '--add-opens=java.base/java.util=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED',
+        '--add-opens=java.base/java.io=ALL-UNNAMED'
+    ]
 }
+
 shadowJar {
     zip64 = true
     mergeServiceFiles()
 
-    // relocate pravega client's dependencies to minimize conflicts
-    relocate "org.apache.commons", "io.pravega.shaded.org.apache.commons"
-    relocate "com.google", "io.pravega.shaded.com.google"
-    relocate "io.grpc", "io.pravega.shaded.io.grpc"
-    relocate "com.squareup.okhttp", "io.pravega.shaded.com.squareup.okhttp"
-    relocate "okio", "io.pravega.shaded.okio"
-    relocate "io.opencensus", "io.pravega.shaded.io.opencensus"
-    relocate "io.netty", "io.pravega.shaded.io.netty"
-    relocate "com.fasterxml.jackson", "io.pravega.shaded.com.fasterxml.jackson"
-    relocate 'META-INF/native/libnetty', 'META-INF/native/libio_pravega_shaded_netty'
-    relocate 'META-INF/native/netty', 'META-INF/native/io_pravega_shaded_netty'
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+    exclude 'META-INF/*.SF'
+
+    manifest {
+        attributes 'Main-Class': 'com.dynatrace.research.shufflebench.SparkStructuredStreamingShuffle'
+    }
 }
+
