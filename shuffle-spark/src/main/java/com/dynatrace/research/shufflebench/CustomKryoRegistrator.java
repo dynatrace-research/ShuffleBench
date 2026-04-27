@@ -2,6 +2,7 @@ package com.dynatrace.research.shufflebench;
 
 import com.dynatrace.research.shufflebench.consumer.State;
 import com.dynatrace.research.shufflebench.record.*;
+import com.dynatrace.research.shufflebench.record.Record;
 import com.esotericsoftware.kryo.Kryo;
 import org.apache.spark.serializer.KryoRegistrator;
 

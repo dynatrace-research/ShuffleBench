@@ -8,9 +8,18 @@ import com.esotericsoftware.kryo.io.Output;
 
 import java.io.Serializable;
 
+/**
+ * Kryo serializer for {@link State} values.
+ */
 public class StateKyroSerializer extends Serializer<State> implements Serializable {
 
   private static final long serialVersionUID = 728071037176839228L;
+
+  /**
+   * Creates a state Kryo serializer.
+   */
+  public StateKyroSerializer() {
+  }
 
   @Override
   public void write(Kryo kryo, Output output, State state) {
@@ -20,7 +29,7 @@ public class StateKyroSerializer extends Serializer<State> implements Serializab
   }
 
   @Override
-  public State read(Kryo kryo, Input input, Class<State> type) {
+  public State read(Kryo kryo, Input input, Class<? extends State> type) {
     final int length = input.readInt();
     final byte[] bytes = input.readBytes(length);
     return new State(bytes);

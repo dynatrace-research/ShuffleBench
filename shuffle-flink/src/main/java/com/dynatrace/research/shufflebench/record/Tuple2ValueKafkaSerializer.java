@@ -6,10 +6,20 @@ import org.apache.kafka.common.serialization.Serializer;
 
 import java.util.Map;
 
+/**
+ * Delegating Kafka serializer for the value component of a Flink {@link Tuple2}.
+ *
+ * @param <T> value type
+ */
 public class Tuple2ValueKafkaSerializer<T> implements Serializer<Tuple2<?, T>> {
 
     private final Serializer<T> valueSerializer;
 
+    /**
+     * Creates a tuple-value serializer.
+     *
+     * @param valueSerializer serializer used for the second tuple field
+     */
     public Tuple2ValueKafkaSerializer(Serializer<T> valueSerializer) {
         this.valueSerializer = valueSerializer;
     }

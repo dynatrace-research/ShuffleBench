@@ -6,10 +6,20 @@ import org.apache.kafka.common.serialization.Serializer;
 
 import java.util.Map;
 
+/**
+ * Delegating Kafka serializer for the key component of a Flink {@link Tuple2}.
+ *
+ * @param <T> key type
+ */
 public class Tuple2KeyKafkaSerializer<T> implements Serializer<Tuple2<T,?>> {
 
     private final Serializer<T> keySerializer;
 
+    /**
+     * Creates a tuple-key serializer.
+     *
+     * @param keySerializer serializer used for the first tuple field
+     */
     public Tuple2KeyKafkaSerializer(Serializer<T> keySerializer) {
         this.keySerializer = keySerializer;
     }

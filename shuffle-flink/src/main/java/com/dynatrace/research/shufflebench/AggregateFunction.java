@@ -8,23 +8,33 @@ import com.dynatrace.research.shufflebench.record.TimestampedRecord;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.util.Collector;
+import org.apache.flink.api.common.functions.OpenContext;
 
+/**
+ * Aggregates timestamped records per key using a {@link StatefulConsumer}.
+ */
 public class AggregateFunction
         extends KeyedProcessFunction<String, Tuple2<String, TimestampedRecord>, Tuple2<String, ConsumerEvent>> {
 
+    /** Stateful consumer used to update per-key state. */
     private final StatefulConsumer consumer;
 
+    /** Flink-managed state for the current key. */
     private ValueState<State> state;
 
+    /**
+     * Creates the keyed aggregation function.
+     *
+     * @param consumer stateful consumer used for state updates and output generation
+     */
     public AggregateFunction(StatefulConsumer consumer) {
         this.consumer = consumer;
     }
 
     @Override
-    public void open(Configuration parameters) {
+    public void open(OpenContext openContext) {
         state = super.getRuntimeContext().getState(new ValueStateDescriptor<>("state", State.class));
     }
 

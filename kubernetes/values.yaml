@@ -4,6 +4,12 @@ kafkaClient:
 kcat:
   enabled: true
 
+strimzi-kafka-operator:
+  createGlobalResources: true  # Required for rack-awareness
+  extraEnvs:
+    - name: STRIMZI_KUBERNETES_VERSION
+      value: "major=1,minor=33"
+
 strimzi:
   kafka:
     replicas: 3
@@ -11,9 +17,13 @@ strimzi:
       "auto.create.topics.enable": false
       "log.retention.ms": "7200000" # 2h
       "transaction.max.timeout.ms": "7200000" # 2h
-    jvmOptions: # Will become default with Theodolite v0.10
-      "-Xmx": null
-      "-Xms": null
+    # Note: Theodolite chart used to set "-Xms"/"-Xmx" to null here to let
+    # Strimzi auto-size the JVM heap, but newer Strimzi CRDs reject null
+    # for these fields (they must be strings). Leave jvmOptions unset so
+    # the chart's default string values apply. To override, use e.g.:
+    # jvmOptions:
+    #   "-Xms": "4G"
+    #   "-Xmx": "4G"
   zookeeper:
     replicas: 3
     zooEntrance:
